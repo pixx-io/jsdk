@@ -1,0 +1,134 @@
+@import './variables';
+.fields {
+  .field {
+    position: relative;
+    margin: 0;
+    display: flex;
+    align-items: stretch;
+    border-radius: 6px;
+    border: 1px solid $grey;
+    &--error {
+      border: 1px solid red !important;
+      label {
+        color: red !important;
+      }
+      small {
+        color: red !important;
+      }
+    }
+    &--success {
+      small {
+        color: $lightgreen !important;
+      }
+    }
+    &--checkbox {
+      border: none;
+      flex-wrap: wrap;
+      p {
+        width: 100%;
+        margin: 0 0 0.25em;
+        color: $color;
+      }
+      label {
+        padding: 0 0 0 15px;
+        position: relative;
+        margin: 0 20px 0.5em 0;
+        display: block;
+        cursor: pointer;
+        &:before {
+          display: block;
+          width: 24px;
+          height: 24px;
+          border: 2px solid $grey;
+          border-radius: 4px;
+          position: absolute;
+          top: 50%;
+          transform: translate(0, -50%);
+          left: 0;
+          box-sizing: border-box;
+          content: '';
+        }
+        
+      }
+      input:checked + label {
+        &:before{
+          border: 2px solid $primary;
+        }
+        &:after {
+          content: url('../check.svg');
+          position: absolute;
+          width: 16px;
+          height: 16px; 
+          display: block;
+          position: absolute;
+          top: 50%;
+          transform: translate(0, -55%);
+          left: 4px;
+          color: $primary;
+        }
+      }
+      input {
+        position: absolute;
+        left: -999em;
+        opacity: 0;
+      }
+    }
+    select,
+    input[type="phone"],
+    input[type="text"],
+    input[type="password"] {
+      flex: 1;
+      border: none;
+      border-radius: 3px;
+      background: transparent;
+      box-sizing: border-box;
+      padding: 6px 15px;
+      font-family: 'Heebo', Arial, Helvetica, sans-serif;
+      &:-webkit-autofill,
+      &:-webkit-autofill:hover, 
+      &:-webkit-autofill:focus, 
+      &:-webkit-autofill:active
+      {
+        -webkit-box-shadow: 0 0 0 30px white inset !important;
+      }
+      & + label {
+        position: absolute;
+        bottom: 50%;
+        left: 10px;
+        transform: translate(0, 50%);
+        background: white;
+        color: $grey;
+        padding: 0 5px;
+        font-size: 14px;
+        transition: font-size 200ms ease, bottom 200ms ease;
+      }
+      &:focus,
+      &:not(:placeholder-shown) {
+        border: none;
+        outline: none;
+        & + label {
+          bottom: 100%;
+          font-size: 12px;
+        }
+      }
+    }
+    &__postfix {
+      display: flex;
+      align-items: center;
+      background: $dirtywhite;
+      padding: 0 20px; 
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+
+    small {
+      font-size: 10px;
+      position: absolute;
+      top: 100%;
+      background: white;
+      left: 17px;
+      padding: 0 5px;
+      transform: translate(0, -50%);
+    }
+  }
+}

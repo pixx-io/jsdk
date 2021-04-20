@@ -1,0 +1,55 @@
+@import './variables';
+.buttonGroup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 30px 0 0;
+  position: relative;
+  .step {
+    color: $grey;
+    font-size: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+  }
+  &--right {
+    justify-content: flex-end;
+  }
+}
+.button {
+  padding: 0 16px;
+  background: $primary;
+  color: #fff;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 36px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: inline-block;
+  box-shadow: 0px 1px 3px #00000033;
+  border: none;
+  transition: background-color 200ms ease;
+  cursor: pointer;
+  &:hover {
+    background-color: darken($primary, 10%);
+    color: #fff !important;
+  }
+  &:disabled {
+    background: $lightgrey;
+    box-shadow: none;
+    &:hover {
+      background: $lightgrey;
+    }
+  }
+  &--secondary {
+    background: transparent;
+    box-shadow: none;
+    color: $primary;
+    &:hover {
+      background: transparent;
+      color: darken($primary, 10%) !important;
+    }
+  }
+}

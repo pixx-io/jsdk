@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width,initial-scale=1'>
+	<title>PIXXIO LIB</title>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+	<link rel="stylesheet" href="pixxio.jsdk.css">
+</head>
+
+<body>
+	<!-- EMBEED SCRIPT -->
+	<button>select file over pixxio</button>
+	<p>
+		Set your appKey and appUrl first to test this integration library.
+	</p>
+	<script src='pixxio.jsdk.min.js'></script>
+	<script type="application/javascript">
+		var p = new PIXXIO({
+			appKey: '',
+			appUrl: ''
+		});
+
+		function setImage(file) {
+			var image = new Image();
+			image.src = file.thumbnail;
+			document.body.appendChild(image);
+		}
+		
+		document.querySelector('button').addEventListener('click', (e) => {
+			e.preventDefault();
+			p.getMedia({ max: 0 }).then((selectedFiles) => {
+				selectedFiles.forEach(f => setImage(f));
+			}).catch(() => {
+				console.log('canceled')
+			});
+		})
+
+	</script>
+</body>
+</html>
