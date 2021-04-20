@@ -79,6 +79,7 @@
     #pixxio-integration {
 			font-family: 'Heebo', Arial, Helvetica, sans-serif;
 			font-size: 16px;
+			all: initial;
 		}
   </style>
 </svelte:head>

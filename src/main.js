@@ -1,19 +1,8 @@
 import App from './App.svelte';
 
-// boot
-(() => {
-	const root = document.createElement('div');
-	root.id = 'pixxio-integration';
-	document.body.appendChild(root);
-})();
-
-/* svelte app */
-// creates Media selection
-
-
-
 class PIXXIO {
 	constructor(config = {}, lang = 'en') {
+		this.boot();
 		this.config = config;
 		this.app = new App({
 			target: document.querySelector('#pixxio-integration'),
@@ -23,6 +12,11 @@ class PIXXIO {
 			}
 		});
 	}
+	boot() {
+		const root = document.createElement('div');
+		root.id = 'pixxio-integration';
+		document.body.appendChild(root);
+	};
 	getMedia(config) {		
 		return new Promise((resolve, reject) => {
 			if(config.max) {

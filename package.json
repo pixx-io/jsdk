@@ -1,12 +1,19 @@
 {
-  "name": "svelte-app",
-  "version": "1.0.0",
-  "private": true,
+  "name": "@pixx.io/jsdk",
+  "title": "pixx.io JSDK",
+  "version": "0.1.5",
+  "main": "build/esm/index.js",
+  "module": "build/esm/index.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv build"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pixx-io/jsdk.git"
+  },
+  "homepage": "https://github.com/pixx-io/jsdk#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
@@ -15,11 +22,16 @@
     "rollup-plugin-livereload": "^2.0.0",
     "rollup-plugin-svelte": "^7.0.0",
     "rollup-plugin-terser": "^7.0.0",
-    "svelte": "^3.0.0"
-  },
-  "dependencies": {
+    "svelte": "^3.0.0",
     "node-sass": "^5.0.0",
     "sirv-cli": "^1.0.0",
     "svelte-preprocess": "^4.6.9"
-  }
+  },
+  "dependencies": {},
+  "description": "This Library helps you to integrate pixx.io DAM Features to your application.",
+  "bugs": {
+    "url": "https://github.com/pixx-io/jsdk/issues"
+  },
+  "author": "",
+  "license": "ISC"
 }

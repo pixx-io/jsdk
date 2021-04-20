@@ -4,6 +4,24 @@ This Library helps you to integrate pixx.io DAM Features to your application.
 
 ## SETUP
 
+### NPM
+
+just install the package via `npm install @pixx.io/jsdk` and import it in your application via ESM:
+```javascript
+import '@pixx.io/jsdk/build/pixxio.jsdk.css'; /* CSS stuff is needed */
+import PIXXIO from '@pixx.io/jsdk';
+
+/* or */
+const PIXXIO = require('@pixx.io/jsdk')
+```
+
+### Or simply integrate it
+
+Just integrate it via unpkg.com:
+- [https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.css](https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.css)
+- [https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.min.js](https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.min.js)
+
+
 ## USAGE
 
 First you have to initialize the PIXXIO Class with your `APPKEY` and your `APPURL` (the URL to your pixx.io installation. e.g. https://demo.pixxio.media)
