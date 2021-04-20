@@ -18,8 +18,8 @@ const PIXXIO = require('@pixx.io/jsdk')
 ### Or simply integrate it
 
 Just integrate it via unpkg.com:
-- [https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.css](https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.css)
-- [https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.min.js](https://unpkg.com/@pixx.io/jsdk@0.1.0/build/pixxio.jsdk.min.js)
+- [https://unpkg.com/@pixx.io/jsdk@latest/build/pixxio.jsdk.css](https://unpkg.com/@pixx.io/jsdk@latest/build/pixxio.jsdk.css)
+- [https://unpkg.com/@pixx.io/jsdk@latest/build/pixxio.jsdk.min.js](https://unpkg.com/@pixx.io/jsdk@latest/build/pixxio.jsdk.min.js)
 
 
 ## USAGE
