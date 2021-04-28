@@ -6,3 +6,4 @@ export const refreshToken = writable('');
 export const accessToken = writable('');
 export const searchTerm = writable('');
 export const format = writable('preview');
+export const v1 = writable(false);

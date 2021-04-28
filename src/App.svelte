@@ -6,13 +6,14 @@
 	import Files from './Files.svelte';
 	import { lang } from './translation';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { domain, appKey } from './store';
+	import { domain, appKey, v1 } from './store';
 
 	/* Props */
 	export let standalone = false;
 	export let config = {
 		appUrl: '',
-		appKey: ''
+		appKey: '',
+		v1: false
 	};
 	export let show = false;
 	export let max = 0;
@@ -22,6 +23,7 @@
 	onMount(async () => {
 		domain.update(() => config.appUrl);
 		appKey.update(() => config.appKey);
+		v1.update(() => config.v1 || false);
 	})
 
 	let loading = false;

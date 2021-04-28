@@ -15,7 +15,7 @@
 <li on:click={() => select()}>
   <figure>
     <div class="pixxioSquare" class:pixxioSquare--active={file.selected}>
-      <img loading="lazy" src={file.modifiedPreviewFileURLs[0]} alt={file.fileName}>
+      <img loading="lazy" src={file.imagePath || file.modifiedPreviewFileURLs[0]} alt={file.fileName}>
     </div>
     <figcaption>
       {file.fileName}

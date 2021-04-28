@@ -4,7 +4,7 @@
   import Selection from "./Selection.svelte";
   import FileItem from "./FileItem.svelte";
   import Loading from './Loading.svelte';
-  import { searchTerm, format } from './store';
+  import { searchTerm, format, v1 } from './store';
   import {API} from './api'
   import { lang } from './translation'
 
@@ -26,12 +26,17 @@
   $: maxReached = selectedCount >= max && max;
   $: valid = selectedCount >= 1 && downloadFormat;
   $: downloadFormat = $format;
+  $: version1 = $v1;
 
   onMount(() => {
-    getFiles = fetchFiles();
+    getFiles = version1 ? fetchFilesV1() : fetchFiles();
     searchTerm.subscribe(value => {
       query = value;
-      fetchFiles();
+      if(version1) {
+        fetchFilesV1();
+      } else {
+        fetchFiles();
+      }
     })
   });
 
@@ -41,8 +46,45 @@
 
       if (delta < event.target.offsetHeight/2) {
         page += 1;
-        fetchFiles(true);
+        if(version1) {
+          fetchFilesV1(true);
+        } else {
+          fetchFiles(true);
+        }
       }
+  }
+
+  const fetchFilesV1 = async (attach) => {
+    try {
+      isLoading = true;
+      const filter = query ? {
+        searchTerm: query
+      } : {};
+      const options = { 
+        pagination: pageSize + '-' + page,
+        ...filter
+      }
+      const data = await api.get(`/files`, { options: options });
+      if(data.success !== 'true') {
+        throw new Error(data.errormessage)
+      }
+
+      data.files = data.files.map(file => {
+        file.selected = selectedFiles.find(f => f.id === file.id);
+        return file;
+      });
+      
+      if (attach) {
+        files = [...files, ...data.files];
+      } else {
+        files = data.files;
+        quantity = data.quantity;
+      }
+      isLoading = false;
+    } catch(e) {
+      hasError = true;
+      isLoading = false;
+    }
   }
 
   const fetchFiles = async (attach) => {
@@ -124,9 +166,18 @@
 
   const submit = async () => {
     dispatch('submit', selectedFiles.map((file) => {
+      let url = '';
+      let thumbnail = '';
+      if (version1) {
+        url = downloadFormat === 'preview' ? file.imagePath : file.originalPath,
+        thumbnail = file.imagePath;
+      } else {
+        url = downloadFormat === 'preview' ? file.previewFileURL : file.originalFileURL
+        thumbnail = file.modifiedPreviewFileURLs[0];
+      }
       return {
-        url: downloadFormat === 'preview' ? file.previewFileURL : file.originalFileURL,
-        thumbnail: file.modifiedPreviewFileURLs[0]
+        url,
+        thumbnail
       }
     }));
   }

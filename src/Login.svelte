@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domain, appKey, refreshToken } from './store';
+  import { domain, appKey, refreshToken, v1 } from './store';
 import { API } from "./api";
 import Loading from "./Loading.svelte";
   
@@ -12,6 +12,7 @@ import Loading from "./Loading.svelte";
   let password = '';
   $: domainVal = $domain;
   $: appKeyVal = $appKey;
+  $: version1 = $v1;
   let hasError = false;
   let isLoading = false;
 
@@ -68,6 +69,57 @@ import Loading from "./Loading.svelte";
     }
   }
 
+  const loginV1 = async () => {
+    isLoading = true;
+    hasError = false;
+    try {
+      const formData = new FormData();
+      formData.set('apiKey', appKeyVal);
+      formData.set('options', JSON.stringify({ username, password }));
+      const requestData = {
+        apiKey: appKeyVal,
+        options: { username, password }
+      };
+
+      let params = new URLSearchParams();
+      for (const key of Object.keys(requestData)) {
+        let value = requestData[key];
+        if (typeof value === 'object') {
+          value = JSON.stringify(value);
+        }
+        params.set(key, value);
+      }
+      params = params.toString();
+
+      const data = await fetch(`${domainVal}/cgi-bin/api/pixxio-api.pl/json/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params
+      });
+
+      const response = await data.json();
+
+      isLoading = false;
+
+      if (response.success !== 'true') {
+        hasError = true;
+        throw new Error();
+      }
+
+      // store refreshToken 
+      refreshToken.update(() => response.refreshToken);
+      sessionStorage.setItem('refreshToken', response.refreshToken);
+      
+      api.callAccessToken().then(() => {
+        dispatch('authenticated');
+      });
+    } catch(error) {
+      isLoading = false;
+      hasError = true;
+    }
+  }
   const cancel = () => {
     dispatch('cancel');
   }
@@ -89,7 +141,7 @@ import Loading from "./Loading.svelte";
   {/if}
   <div class="buttonGroup">
     <button class="button button--secondary" on:click={cancel}>{lang('cancel')}</button>
-    <button class="button" type="submit" disabled='{isLoading}' on:click={login}>{lang('signin')}</button>
+    <button class="button" type="submit" disabled='{isLoading}' on:click={version1 ? loginV1 : login}>{lang('signin')}</button>
   </div>
   {#if isLoading}
     <Loading></Loading>

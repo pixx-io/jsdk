@@ -11,7 +11,7 @@ import { createEventDispatcher } from "svelte";
 <ul>
   {#each selected as file}
     <li class="pixxioSelection__file" on:click={dispatch('deselect', file)}>
-      <img loading="lazy" src={file.modifiedPreviewFileURLs[0]} alt={file.fileName}>
+      <img loading="lazy" src={file.imagePath || file.modifiedPreviewFileURLs[0]} alt={file.fileName}>
     </li>
   {/each}
   {#if selectedFiles.length > 3}

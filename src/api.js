@@ -1,4 +1,4 @@
-import { accessToken, appKey, domain, refreshToken } from "./store";
+import { accessToken, appKey, domain, refreshToken, v1 } from "./store";
 
 export class API {
 
@@ -6,6 +6,7 @@ export class API {
   refreshToken = '';
   domain = '';
   appKey = '';
+  v1 = false;
 
   constructor(
   ) {
@@ -13,6 +14,7 @@ export class API {
     appKey.subscribe(value => this.appKey = value);
     refreshToken.subscribe(value => this.refreshToken = value);
     accessToken.subscribe(value => this.accessToken = value);
+    v1.subscribe(value => this.v1 = value);
   }
 
   get(path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true)  {
@@ -33,10 +35,19 @@ export class API {
 
   callAccessToken() {
     return new Promise((resolve, reject) => {
-      this.post('/accessToken', {
+      let requestData = {
         refreshToken: this.refreshToken,
         applicationKey: this.appKey
-      }, false)
+      };
+
+      if(this.v1) {
+        requestData = {
+          refreshToken: this.refreshToken,
+          apiKey: this.appKey
+        }
+      }
+
+      this.post('/accessToken', requestData, false)
       .then((data) => {
         if(data.success) {
           this.accessToken = data.accessToken;
@@ -53,7 +64,10 @@ export class API {
   call(method, path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true) {
     return new Promise((resolve, reject) => {
       const request = (requestData, headers) => {
-        const url = this.domain + '/gobackend' + path;
+        const url = this.domain + (this.v1 ? '/cgi-bin/api/pixxio-api.pl/json' : '/gobackend') + path;
+        if (this.v1 && this.accessToken) {
+          requestData.accessToken = this.accessToken;
+        }
         let params = requestData;
         if (useURLSearchParams) {
           params = new URLSearchParams();
@@ -121,9 +135,12 @@ export class API {
 
       if (useAccessToken) {
         const accessToken = this.accessToken;
-        const headers = {  // API v2
-          Authorization: 'Key ' + accessToken
-        };
+        let headers = {};
+        if (!this.v1) {
+          headers = {  // API v2
+            Authorization: 'Key ' + accessToken
+          };
+        }
         parameters.accessToken = accessToken;  // API v1
         request(parameters, headers);
       } else {
