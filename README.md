@@ -29,7 +29,8 @@ First you have to initialize the PIXXIO Class with your `APPKEY` and your `APPUR
 ```javascript
 const p = new PIXXIO({
   appKey: 'APPKEY',
-  appUrl: 'APPURL'
+  appUrl: 'APPURL',
+  v1: true|false
 })
 ```
 ### Options
@@ -41,6 +42,10 @@ Your system Application Key.
 **appUrl**
 
 Your pixx.io system URL.
+
+**v1**
+
+If you are requesting a version 1 pixx.io system, you have to add the boolean flag `v1`
 
 
 ## Methods
