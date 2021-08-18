@@ -31,6 +31,7 @@ const p = new PIXXIO({
   appKey: 'APPKEY',
   appUrl: 'APPURL',
   v1: true|false
+  element: HTMLElement
 })
 ```
 ### Options
@@ -46,6 +47,10 @@ Your pixx.io system URL.
 **v1**
 
 If you are requesting a version 1 pixx.io system, you have to add the boolean flag `v1`
+
+**element**
+
+if element is set, then this element will be used as root element for the pixxio selector. Otherwise an own element is created and added to the body. 
 
 
 ## Methods

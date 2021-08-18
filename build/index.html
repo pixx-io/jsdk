@@ -14,11 +14,13 @@
 	<p>
 		Set your appKey and appUrl first to test this integration library.
 	</p>
+	<div id="test"></div>
 	<script src='pixxio.jsdk.min.js'></script>
 	<script type="application/javascript">
 		var p = new PIXXIO({
-			appKey: '',
-      appUrl: ''
+			element: document.querySelector('#test'),
+			appKey: 'd75pK5J2an9U4a2HjsMc7EL0V',
+      appUrl: 'https://steylish.px.media'
 		});
 
 		function setImage(file) {
@@ -29,7 +31,7 @@
 		
 		document.querySelector('button').addEventListener('click', (e) => {
 			e.preventDefault();
-			p.getMedia({ max: 0 }).then((selectedFiles) => {
+			p.getMedia({ max: 2 }).then((selectedFiles) => {
 				selectedFiles.forEach(f => setImage(f));
 			}).catch(() => {
 

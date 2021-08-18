@@ -140,8 +140,9 @@ export class API {
           headers = {  // API v2
             Authorization: 'Key ' + accessToken
           };
+        } else {
+          parameters.accessToken = accessToken;  // API v1
         }
-        parameters.accessToken = accessToken;  // API v1
         request(parameters, headers);
       } else {
         request(parameters);

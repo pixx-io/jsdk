@@ -2,10 +2,10 @@ import App from './App.svelte';
 
 class PIXXIO {
 	constructor(config = {}, lang = 'en') {
-		this.boot();
 		this.config = config;
+		this.boot();
 		this.app = new App({
-			target: document.querySelector('#pixxio-integration'),
+			target: this.element,
 			props: {
 				standalone: true,
 				config
@@ -13,9 +13,14 @@ class PIXXIO {
 		});
 	}
 	boot() {
-		const root = document.createElement('div');
-		root.id = 'pixxio-integration';
-		document.body.appendChild(root);
+		if (!this.config.element) {
+			const root = document.createElement('div');
+			root.id = 'pixxio-integration';
+			document.body.appendChild(root);
+			this.element = root;
+		} else {
+			this.element = this.config.element;
+		}
 	};
 	getMedia(config) {		
 		return new Promise((resolve, reject) => {

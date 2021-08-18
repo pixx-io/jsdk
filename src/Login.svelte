@@ -39,7 +39,7 @@ import Loading from "./Loading.svelte";
     try {
       const formData = new FormData();
       formData.set('applicationKey', appKeyVal);
-      formData.set('userName', username);
+      formData.set('userNameOrEmail', username);
       formData.set('password', password);
 
       const data = await fetch(`${domainVal}/gobackend/login`, {

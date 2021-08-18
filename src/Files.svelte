@@ -147,21 +147,32 @@
   }
 
   const select = (event) => {
-    if (max && max <= selectedFiles.length) {
-      return;
-    }
+    // if (max && max <= selectedFiles.length) {
+    //   return;
+    // }
     const file = files.find((f) => f.id === event.detail.id);
     file.selected = true;
     files = files;
 
-    selectedFiles = [...selectedFiles, event.detail];
+    selectedFiles = [event.detail, ...selectedFiles.slice(0, max-1)];
+    markSelected();
   }
 
   const deselect = (event) => {
-    const file = files.find((f) => f.id === event.detail.id);
-    file.selected = false;
-    files = files;
     selectedFiles = selectedFiles.filter((f) => f.id !== event.detail.id);
+    markSelected();
+  }
+
+  const markSelected = () => {
+    files.forEach((file) => {
+      file.selected = false;
+    });
+    files = files;
+    selectedFiles.forEach((sf) => {
+      const file = files.find(f => f.id == sf.id)
+      file.selected = true;
+      files = files;
+    });
   }
 
   const submit = async () => {
