@@ -64,7 +64,7 @@ export class API {
   call(method, path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true) {
     return new Promise((resolve, reject) => {
       const request = (requestData, headers) => {
-        const url = this.domain + (this.v1 ? '/cgi-bin/api/pixxio-api.pl/json' : '/gobackend') + path;
+        const url = 'https://' + this.domain.replace(/(http|https):\/\//, '') + (this.v1 ? '/cgi-bin/api/pixxio-api.pl/json' : '/gobackend') + path;
         if (this.v1 && this.accessToken) {
           requestData.accessToken = this.accessToken;
         }

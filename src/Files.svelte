@@ -95,6 +95,7 @@
       isLoading = true;
       let allowedTypeFilter = [];
       let queryFilter = [];
+      let filter = {};
 
       if (allowedTypes.length) {
         allowedTypeFilter = [{
@@ -115,13 +116,15 @@
         }]
       }
 
-      let filter = {
-        filter: {
-          filterType: 'connectorAnd',
-          filters: [
-            ...queryFilter,
-            ...allowedTypeFilter
-          ]
+      if (query || allowedTypes.length) {
+        filter = {
+          filter: {
+            filterType: 'connectorAnd',
+            filters: [
+              ...queryFilter,
+              ...allowedTypeFilter
+            ]
+          }
         }
       }
 

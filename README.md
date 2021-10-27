@@ -30,8 +30,10 @@ First you have to initialize the PIXXIO Class with your `APPKEY` and your `APPUR
 const p = new PIXXIO({
   appKey: 'APPKEY',
   appUrl: 'APPURL',
-  v1: true|false,
-  element: HTMLElement
+  modal: boolean,
+  v1: boolean,
+  element: HTMLElement,
+  language: string
 })
 ```
 ### Options
@@ -42,7 +44,7 @@ Your system Application Key.
 
 **appUrl**
 
-Your pixx.io system URL. (Mediaspace) If the `appUrl` is not set, the field user will be requested to set the mediaspace on the login screen.
+Your pixx.io system URL. (Mediaspace) If the `appUrl` is not set, the user will be requested to set the mediaspace on the login screen.
 
 **v1**
 
@@ -51,6 +53,14 @@ If you are requesting a version 1 pixx.io system, you have to add the boolean fl
 **element**
 
 if element is set, then this element will be used as root element for the pixxio selector. Otherwise an own element is created and added to the body. 
+
+**modal**
+
+if modal is set to false. the selector won't open as an overlay. default `true`
+
+**language**
+
+currently supported are german `de` and english `en`
 
 
 ## Methods

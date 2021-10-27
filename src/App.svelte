@@ -3,8 +3,9 @@
 	import SearchField from './SearchField.svelte';
 	import Login from './Login.svelte';
 	import Files from './Files.svelte';
+	import User from './User.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { domain, appKey, v1, modal } from './store';
+	import { domain, appKey, v1, modal, refreshToken, language } from './store';
 
 	/* Props */
 	export let standalone = false;
@@ -13,6 +14,7 @@
 		appKey: '',
 		v1: false,
 		modal: true,
+		language: 'en'
 	};
 	export let show = false;
 	export let max = 0;
@@ -26,6 +28,7 @@
 		appKey.update(() => config.appKey);
 		v1.update(() => config.v1 || false);
 		modal.update(() => config.modal);
+		language.update(() => config.language);
 	});
 
 
@@ -38,6 +41,14 @@
 	// authenticated
 	const authenticated = () => {
 		isAuthenticated = true;
+	}
+
+	const logout = () => {
+		isAuthenticated = false;
+		sessionStorage.removeItem('refreshToken');
+		sessionStorage.removeItem('domain');
+		domain.update(() => '');
+		refreshToken.update(() => '');
 	}
 
 	const cancel = () => {
@@ -58,18 +69,21 @@
 			{#if isAuthenticated}
 			<SearchField bind:value={searchQuery}></SearchField>
 			{/if}
+			
 		</header>
 
 		{#if !isAuthenticated}
-		<section>
+		<section class="pixxioSectionLogin">
 			<Login on:cancel={cancel} on:authenticated={authenticated}></Login>
 		</section>
 		{:else}
-		<section>
+		<section class="pixxioSectionFiles">
 			<Files on:cancel={cancel} bind:allowedTypes={allowedTypes} bind:allowedFormats={allowedFormats} on:submit={submit} bind:max={max}></Files>
 		</section>
 		{/if}
-		
+		{#if isAuthenticated}
+			<User on:logout={logout}></User>
+		{/if}
 	</div>
 </main>
 {/if}

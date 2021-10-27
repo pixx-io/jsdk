@@ -1,4 +1,9 @@
+import { language } from "./store";
+
 export function lang(key) {
+
+  let lang = 'en';
+  language.subscribe(value => lang = value);
 
   const lines = {
     de: {
@@ -14,7 +19,8 @@ export function lang(key) {
       please_select: 'Format wählen',
       original: 'Original',
       preview: 'Vorschau',
-
+      logged_in_as: 'Du bist angemeldet als: ',
+      logout: 'Ausloggen'
     },
     en: {
       mediaspace: 'Mediaspace (example.px.media)',
@@ -28,9 +34,10 @@ export function lang(key) {
       selected: 'selected',
       please_select: 'Choose a format',
       original: 'Original',
-      preview: 'Preview'
+      preview: 'Preview',
+      logged_in_as: 'You are logged in as: ',
+      logout: 'Logout'
     }
   }
-  const lang = null;
-  return lines[lang || 'de'][key];
+  return lines[lang || 'en'][key];
 }

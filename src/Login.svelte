@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domain, appKey, refreshToken, v1 } from './store';
+  import { domain, appKey, refreshToken, v1, modal } from './store';
 import { API } from "./api";
 import Loading from "./Loading.svelte";
   
@@ -13,7 +13,6 @@ import Loading from "./Loading.svelte";
   $: domainVal = $domain;
   $: appKeyVal = $appKey;
   $: version1 = $v1;
-  $: appUrl = $appUrl;
   let hasError = false;
   let isLoading = false;
   let mediaspace = '';
@@ -22,9 +21,14 @@ import Loading from "./Loading.svelte";
    * check if there is a refreshToken in storage
    */
   const token = sessionStorage.getItem('refreshToken');
-  if(token) {
+  mediaspace = sessionStorage.getItem('domain');
+  if (mediaspace) {
+    domain.update(() => mediaspace);
+  }
+  if(token && (domainVal || mediaspace)) {
     isLoading = true;
     refreshToken.update(() => token);
+    
     api.callAccessToken().then(() => {
       isLoading = false;
       dispatch('authenticated');
@@ -44,7 +48,7 @@ import Loading from "./Loading.svelte";
       formData.set('userNameOrEmail', username);
       formData.set('password', password);
 
-      const data = await fetch(`${domainVal}/gobackend/login`, {
+      const data = await fetch(`https://${mediaspace}/gobackend/login`, {
         method: 'POST',
         body: formData
       });
@@ -60,6 +64,8 @@ import Loading from "./Loading.svelte";
 
       // store refreshToken 
       refreshToken.update(() => response.refreshToken);
+      domain.update(() => mediaspace);
+      sessionStorage.setItem('domain', mediaspace);
       sessionStorage.setItem('refreshToken', response.refreshToken);
       
       api.callAccessToken().then(() => {
@@ -127,10 +133,10 @@ import Loading from "./Loading.svelte";
   }
 </script>
 
-<div class="login fields">
+<div class="login fields" class:no-modal="{!$modal}">
   <h2>{lang('signin')}</h2>
   <p>{lang('signin_description')}</p>
-  {#if appUrl}
+  {#if !domainVal}
   <div class="field">
     <input bind:value={mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " />
     <label for="pixxio-mediaspace">{lang('mediaspace')}</label>
@@ -170,6 +176,7 @@ import Loading from "./Loading.svelte";
     max-width: 300px;
     margin: 0 auto;
     padding: 0 30px;
+
     .field {
       margin: 0 0 1em;
     }
@@ -177,6 +184,11 @@ import Loading from "./Loading.svelte";
     .error {
       color: red;
       font-size: 12px;
+    }
+
+    &.no-modal {
+      padding: 0;
+      max-width: none;
     }
   }
   
