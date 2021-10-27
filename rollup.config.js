@@ -89,7 +89,14 @@ export default [{
 				// enable run-time checks when not in production
 				dev: !production
 			},
-			preprocess: preprocess()
+			preprocess: preprocess(),
+			onwarn: (warning, handler) => {
+        const { code, frame } = warning;
+        if (code === "css-unused-selector")
+            return;
+
+        handler(warning);
+    	},
 		}),
 		// we'll extract any component CSS out into
 		// a separate file - better for performance

@@ -4,7 +4,7 @@
   import Selection from "./Selection.svelte";
   import FileItem from "./FileItem.svelte";
   import Loading from './Loading.svelte';
-  import { searchTerm, format, v1 } from './store';
+  import { searchTerm, format, v1, modal } from './store';
   import {API} from './api'
   import { lang } from './translation'
 
@@ -12,6 +12,8 @@
   const api = new API();
 
   export let max = 0;
+  export let allowedTypes = [];
+  export let allowedFormats = null;
 
   let hasError = false;
   let getFiles = null;
@@ -24,7 +26,7 @@
   let selectedFiles = [];
   $: selectedCount = selectedFiles.length;
   $: maxReached = selectedCount >= max && max;
-  $: valid = selectedCount >= 1 && downloadFormat;
+  $: valid = selectedCount >= 1 && $format;
   $: downloadFormat = $format;
   $: version1 = $v1;
 
@@ -88,14 +90,41 @@
   }
 
   const fetchFiles = async (attach) => {
+
     try {
       isLoading = true;
-      const filter = query ? {
-        filter: {
+      let allowedTypeFilter = [];
+      let queryFilter = [];
+
+      if (allowedTypes.length) {
+        allowedTypeFilter = [{
+          filterType: 'connectorOr',
+          filters: [
+            ...allowedTypes.map(type => ({
+              filterType: 'fileExtension',
+              fileExtension: type
+            }))
+          ]
+        }]
+      }
+      
+      if (query) {
+        queryFilter = [{
           filterType: 'searchTerm',
           term: query
+        }]
+      }
+
+      let filter = {
+        filter: {
+          filterType: 'connectorAnd',
+          filters: [
+            ...queryFilter,
+            ...allowedTypeFilter
+          ]
         }
-      } : {};
+      }
+
       const options = { 
         page, 
         pageSize, 
@@ -123,6 +152,7 @@
         ],
         ...filter
       }
+
       const data = await api.get(`/files`, options);
       if(!data.success) {
         throw new Error(data.errormessage)
@@ -141,6 +171,7 @@
       }
       isLoading = false;
     } catch(e) {
+      console.log(e);
       hasError = true;
       isLoading = false;
     }
@@ -175,8 +206,34 @@
     });
   }
 
+  const fetchDownloadFormats = async (id) => {
+    const convert = await api.get('/files/convert', {
+      ids: [id],
+      downloadType: 'downloadFormat',
+      downloadFormatID: downloadFormat
+    })
+
+    const checkDownload = async () => {
+      const download = await api.get('/files/download', {
+        downloadID: convert.downloadID
+      });
+      if (!download.downloadURL) {        
+        return await new Promise((resolve) => {
+          setTimeout(() => checkDownload().then((result) => resolve(result)), 100);
+        });
+      } else {
+        return download.downloadURL;
+      }
+    }
+
+    return await checkDownload();
+  }
+
   const submit = async () => {
-    dispatch('submit', selectedFiles.map((file) => {
+    const preparedFiles = [];
+    isLoading = true;
+    for (let i = 0; i < selectedFiles.length; i += 1) {
+      const file = selectedFiles[i];
       let url = '';
       let thumbnail = '';
       if (version1) {
@@ -186,20 +243,29 @@
         url = downloadFormat === 'preview' ? file.previewFileURL : file.originalFileURL
         thumbnail = file.modifiedPreviewFileURLs[0];
       }
-      return {
+
+      if (!['preview', 'original'].includes(downloadFormat)) {
+        // catch format
+        url = await fetchDownloadFormats(file.id);
+      }
+
+      preparedFiles.push({
+        id: file.id,
         url,
         thumbnail
-      }
-    }));
+      })
+    }
+    isLoading = false;
+    dispatch('submit', preparedFiles)
   }
 </script>
 
-<div class="pixxioFiles">
+<div class="pixxioFiles" class:no-modal={!$modal}>
   {#await getFiles}
     <Loading></Loading>
     {:then} 
     
-    <section id="pixxioFiles__container" on:scroll={lazyLoad} class:pixxioFiles__container--maxReached={maxReached} > 
+    <section class="pixxioFiles__container" on:scroll={lazyLoad} class:pixxioFiles__container--maxReached={maxReached} > 
       <ul>
         {#each files as file}
         <FileItem bind:file={file} bind:selected={file.selected} on:select={select} on:deselect={deselect}></FileItem>
@@ -208,7 +274,7 @@
     </section>
     
     <div class="pixxioFormats">
-      <DownloadFormats></DownloadFormats>
+      <DownloadFormats bind:allowedFormats={allowedFormats}></DownloadFormats>
     </div>
 
     <div class="buttonGroup buttonGroup--right">
@@ -216,7 +282,7 @@
       <Selection on:deselect={deselect} bind:selectedFiles={selectedFiles}></Selection>
       <span style="flex-grow: 1"></span>
       <button class="button button--secondary" on:click={() => dispatch('cancel')}>{lang('cancel')}</button>
-      <button class="button" type="submit" disabled={!valid} on:click={submit} >{lang('select')}</button>
+      <button class="button" type="submit" disabled={!valid || isLoading} on:click={submit} >{lang('select')}</button>
     </div>
     {:catch}
     error
@@ -227,9 +293,6 @@
   @import './styles/variables';
   @import './styles/button';
   .pixxioFiles {
-    > p {
-      padding: 0 30px;
-    }
     section {
       overflow-y: auto;
       height: 70vh;
@@ -243,6 +306,16 @@
       transition: opacity 200ms ease;
       &--maxReached {
         opacity: 0.7;
+      }
+    }
+    &.no-modal {
+      section {
+        height: auto;
+        max-height: 70vh;
+        padding: 0;
+      }
+      .buttonGroup {
+        padding: 0;
       }
     }
   }

@@ -2,7 +2,8 @@ export function lang(key) {
 
   const lines = {
     de: {
-      username: 'Username',
+      mediaspace: 'Mediaspace (example.px.media)',
+      username: 'Username oder E-Mail',
       password: 'Passwort',
       signin: 'Anmelden',
       signin_description: 'Bitte melde dich in dein pixxio System an um Dateien auszuwählen.',
@@ -12,10 +13,12 @@ export function lang(key) {
       selected: 'ausgewählt',
       please_select: 'Format wählen',
       original: 'Original',
-      preview: 'Vorschau'
+      preview: 'Vorschau',
+
     },
     en: {
-      username: 'Username',
+      mediaspace: 'Mediaspace (example.px.media)',
+      username: 'Username or email',
       password: 'Password',
       signin: 'Sign in',
       signin_description: 'Please sign in to your pixxio system to select files.',

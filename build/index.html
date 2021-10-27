@@ -19,19 +19,24 @@
 	<script type="application/javascript">
 		var p = new PIXXIO({
 			element: document.querySelector('#test'),
+			modal: false,
 			appKey: 'd75pK5J2an9U4a2HjsMc7EL0V',
       appUrl: 'https://steylish.px.media'
 		});
 
 		function setImage(file) {
 			var image = new Image();
-			image.src = file.thumbnail;
+			image.src = file.url;
 			document.body.appendChild(image);
 		}
 		
 		document.querySelector('button').addEventListener('click', (e) => {
 			e.preventDefault();
-			p.getMedia({ max: 2 }).then((selectedFiles) => {
+			p.getMedia({ 
+				max: 2, 
+				allowedTypes: ['jpg', 'png'],
+				// allowedFormats: ['preview']
+			 }).then((selectedFiles) => {
 				selectedFiles.forEach(f => setImage(f));
 			}).catch(() => {
 

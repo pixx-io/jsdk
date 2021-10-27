@@ -7,3 +7,4 @@ export const accessToken = writable('');
 export const searchTerm = writable('');
 export const format = writable('preview');
 export const v1 = writable(false);
+export const modal = writable(true);

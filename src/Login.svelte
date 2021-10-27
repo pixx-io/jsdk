@@ -13,8 +13,10 @@ import Loading from "./Loading.svelte";
   $: domainVal = $domain;
   $: appKeyVal = $appKey;
   $: version1 = $v1;
+  $: appUrl = $appUrl;
   let hasError = false;
   let isLoading = false;
+  let mediaspace = '';
 
   /**
    * check if there is a refreshToken in storage
@@ -128,6 +130,12 @@ import Loading from "./Loading.svelte";
 <div class="login fields">
   <h2>{lang('signin')}</h2>
   <p>{lang('signin_description')}</p>
+  {#if appUrl}
+  <div class="field">
+    <input bind:value={mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " />
+    <label for="pixxio-mediaspace">{lang('mediaspace')}</label>
+  </div>
+  {/if}
   <div class="field">
     <input bind:value={username} id="pixxio-username" disabled='{isLoading}' type="text" placeholder=" " />
     <label for="pixxio-username">{lang('username')}</label>

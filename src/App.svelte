@@ -1,22 +1,23 @@
 <script>
 	import Logo from './Logo.svelte';
-	import Loading from './Loading.svelte';
 	import SearchField from './SearchField.svelte';
 	import Login from './Login.svelte';
 	import Files from './Files.svelte';
-	import { lang } from './translation';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { domain, appKey, v1 } from './store';
+	import { domain, appKey, v1, modal } from './store';
 
 	/* Props */
 	export let standalone = false;
 	export let config = {
 		appUrl: '',
 		appKey: '',
-		v1: false
+		v1: false,
+		modal: true,
 	};
 	export let show = false;
 	export let max = 0;
+	export let allowedTypes = [];
+	export let allowedFormats = null;
 
 	const dispatch = createEventDispatcher();
 
@@ -24,7 +25,9 @@
 		domain.update(() => config.appUrl);
 		appKey.update(() => config.appKey);
 		v1.update(() => config.v1 || false);
-	})
+		modal.update(() => config.modal);
+	});
+
 
 	let loading = false;
 	let isAuthenticated = false;
@@ -46,8 +49,8 @@
 	}
 </script>
 {#if show}
-<main>
-	<div class="container" class:container--enlarge="{enlarge}">
+<main class:no-modal={!config.modal}>
+	<div class="container" class:container--enlarge={enlarge}>
 		<header>
 			{#if standalone}
 			<Logo></Logo>
@@ -63,7 +66,7 @@
 		</section>
 		{:else}
 		<section>
-			<Files on:cancel={cancel} on:submit={submit} bind:max={max}></Files>
+			<Files on:cancel={cancel} bind:allowedTypes={allowedTypes} bind:allowedFormats={allowedFormats} on:submit={submit} bind:max={max}></Files>
 		</section>
 		{/if}
 		
@@ -147,6 +150,27 @@
 			}
 		}
 
+		&.no-modal {
+			position: relative;
+			top: auto;
+			left: auto;
+			right: auto;
+			bottom: auto;
+			background: transparent;
+			padding: 0;
+			header {
+				padding: 30px 0 0;
+			}
+
+			.container {
+				border-radius: 0;
+				padding: 0;
+				max-width: none;
+				&--enlarge {
+					max-width: none;
+				}
+			}
+		}
 		
 	}
 </style>

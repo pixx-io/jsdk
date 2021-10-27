@@ -27,6 +27,12 @@ class PIXXIO {
 			if(config.max) {
 				this.app.$set({ max: config.max });
 			}
+			if(config.allowedTypes) {
+				this.app.$set({ allowedTypes: config.allowedTypes });
+			}
+			if(config.allowedFormats) {
+				this.app.$set({ allowedFormats: config.allowedFormats });
+			}
 			this.app.$set({ show: true });
 			this.app.$on('submit', (event) => {
 				this.app.$set({ show: false });

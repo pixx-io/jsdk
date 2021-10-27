@@ -4,6 +4,8 @@
   import { format } from "./store";
   import { lang } from "./translation";
 
+  export let allowedFormats = null;
+
   const dispatch = createEventDispatcher();
   const api = new API();
   let selected;
@@ -12,12 +14,22 @@
   let hasError = false;
   let isLoading = false;
 
-  let showOriginal = true;
-  let showPreview = true;
+  let showOriginal = allowedFormats === null || (allowedFormats !== null && allowedFormats.includes('original'));
+  let showPreview = allowedFormats === null || (allowedFormats !== null && allowedFormats.includes('preview'));
+
+  let hideDropdown = false;
+
+  
 
   onMount(() => {
-    // fetchDownloadFormats();
-    select();
+    if(allowedFormats && allowedFormats.length === 1) {
+      selected = allowedFormats[0];
+      format.update(() => allowedFormats[0]);
+      hideDropdown = true;
+    } else {
+      fetchDownloadFormats();
+      select();
+    }
   });
 
   const select = () => {
@@ -35,7 +47,7 @@
         throw new Error(data.errormessage)
       }
 
-      formats = data.downloadFormats;
+      formats = data.downloadFormats.filter((format => allowedFormats === null || (allowedFormats !== null && allowedFormats.includes(format.id))));
       isLoading = false;
     } catch(e) {
       hasError = true;
@@ -45,9 +57,10 @@
 
 </script>
 
+{#if !hideDropdown}
 <div class="downloadFormats fields">
   <div class="field">
-    <select bind:value={selected} on:change={select} name="" id="pixxioDownloadFormats__dropdown" placeholder=" ">
+    <select bind:value={selected} on:blur={select} name="" id="pixxioDownloadFormats__dropdown" placeholder=" ">
       {#if showPreview}
       <option value="preview">{lang('preview')}</option>
       {/if}
@@ -61,6 +74,7 @@
     <label for="pixxioDownloadFormats__dropdown">{lang('please_select')}</label>
   </div>
 </div>
+{/if}
 
 <style lang="scss">
   @import './styles/variables';

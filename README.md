@@ -30,7 +30,7 @@ First you have to initialize the PIXXIO Class with your `APPKEY` and your `APPUR
 const p = new PIXXIO({
   appKey: 'APPKEY',
   appUrl: 'APPURL',
-  v1: true|false
+  v1: true|false,
   element: HTMLElement
 })
 ```
@@ -42,7 +42,7 @@ Your system Application Key.
 
 **appUrl**
 
-Your pixx.io system URL.
+Your pixx.io system URL. (Mediaspace) If the `appUrl` is not set, the field user will be requested to set the mediaspace on the login screen.
 
 **v1**
 
@@ -69,7 +69,9 @@ p.getMedia({
 
 #### Options
 
-`max` : a number which sets the maximum of selected files. If `0` the maximum has no effect. default `0` 
+- `max` : a number which sets the maximum of selected files. If `0` the maximum has no effect. default `0` 
+- `allowedTypes`: define the file extensions which are allowed to select. For example `['jpg', 'png']` default: `[]`
+- `allowedFormats`: define download formats which are allowed to select. For original or preview use the keys: `preview`, `original` the other system configured formats can be defined by id. So for example `['preview', 123, 321]` default: `null`
 
 #### Returns
 
@@ -78,6 +80,7 @@ an array of files like this:
 ```javascript 
 [
   {
+    id: '...', // mediaspace file id
     url: '...',
     thumbnail: '...'
   }, 
