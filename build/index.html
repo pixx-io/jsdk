@@ -10,7 +10,8 @@
 
 <body>
 	<!-- EMBEED SCRIPT -->
-	<button>select file over pixxio</button>
+	<button id="btn">select file over pixxio</button>
+	<button id="btn2">select file over pixxio</button>
 	<p>
 		Set your appKey and appUrl first to test this integration library.
 	</p>
@@ -31,7 +32,7 @@
 			document.body.appendChild(image);
 		}
 		
-		document.querySelector('button').addEventListener('click', (e) => {
+		document.querySelector('#btn').addEventListener('click', (e) => {
 			e.preventDefault();
 			p.getMedia({ 
 				max: 2, 
@@ -44,6 +45,19 @@
 			});
 		})
 
+
+		document.querySelector('#btn2').addEventListener('click', (e) => {
+			e.preventDefault();
+			p.getMedia({ 
+				max: 1, 
+				allowedTypes: ['psd'],
+			  allowedFormats: ['preview']
+			 }).then((selectedFiles) => {
+				selectedFiles.forEach(f => setImage(f));
+			}).catch(() => {
+
+			});
+		})
 	</script>
 </body>
 </html>

@@ -20,6 +20,7 @@
 	export let max = 0;
 	export let allowedTypes = [];
 	export let allowedFormats = null;
+	export let additionalResponseFields = [];
 
 	const dispatch = createEventDispatcher();
 
@@ -78,7 +79,7 @@
 		</section>
 		{:else}
 		<section class="pixxioSectionFiles">
-			<Files on:cancel={cancel} bind:allowedTypes={allowedTypes} bind:allowedFormats={allowedFormats} on:submit={submit} bind:max={max}></Files>
+			<Files on:cancel={cancel} bind:allowedTypes={allowedTypes} bind:allowedFormats={allowedFormats} bind:additionalResponseFields={additionalResponseFields} on:submit={submit} bind:max={max}></Files>
 		</section>
 		{/if}
 		{#if isAuthenticated}

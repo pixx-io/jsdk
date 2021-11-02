@@ -123,8 +123,14 @@ function get_current_component() {
         throw new Error('Function called outside component initialization');
     return current_component;
 }
+function beforeUpdate(fn) {
+    get_current_component().$$.before_update.push(fn);
+}
 function onMount(fn) {
     get_current_component().$$.on_mount.push(fn);
+}
+function afterUpdate(fn) {
+    get_current_component().$$.after_update.push(fn);
 }
 function createEventDispatcher() {
     const component = get_current_component();
@@ -1825,11 +1831,11 @@ const file$4 = "src/DownloadFormats.svelte";
 
 function get_each_context$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
-// (60:0) {#if !hideDropdown}
+// (72:0) {#if !hideDropdown}
 function create_if_block$3(ctx) {
 	let div1;
 	let div0;
@@ -1872,14 +1878,14 @@ function create_if_block$3(ctx) {
 			attr_dev(select_1, "placeholder", " ");
 			attr_dev(select_1, "class", "svelte-1x1v299");
 			if (/*selected*/ ctx[0] === void 0) add_render_callback(() => /*select_1_change_handler*/ ctx[7].call(select_1));
-			add_location(select_1, file$4, 62, 4, 1585);
+			add_location(select_1, file$4, 74, 4, 1934);
 			attr_dev(label, "for", "pixxioDownloadFormats__dropdown");
 			attr_dev(label, "class", "svelte-1x1v299");
-			add_location(label, file$4, 73, 4, 2002);
+			add_location(label, file$4, 85, 4, 2351);
 			attr_dev(div0, "class", "field svelte-1x1v299");
-			add_location(div0, file$4, 61, 2, 1561);
+			add_location(div0, file$4, 73, 2, 1910);
 			attr_dev(div1, "class", "downloadFormats fields svelte-1x1v299");
-			add_location(div1, file$4, 60, 0, 1522);
+			add_location(div1, file$4, 72, 0, 1871);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, div1, anchor);
@@ -1953,14 +1959,14 @@ function create_if_block$3(ctx) {
 		block,
 		id: create_if_block$3.name,
 		type: "if",
-		source: "(60:0) {#if !hideDropdown}",
+		source: "(72:0) {#if !hideDropdown}",
 		ctx
 	});
 
 	return block;
 }
 
-// (64:6) {#if showPreview}
+// (76:6) {#if showPreview}
 function create_if_block_2$1(ctx) {
 	let option;
 
@@ -1970,7 +1976,7 @@ function create_if_block_2$1(ctx) {
 			option.textContent = `${lang("preview")}`;
 			option.__value = "preview";
 			option.value = option.__value;
-			add_location(option, file$4, 64, 6, 1724);
+			add_location(option, file$4, 76, 6, 2073);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, option, anchor);
@@ -1985,14 +1991,14 @@ function create_if_block_2$1(ctx) {
 		block,
 		id: create_if_block_2$1.name,
 		type: "if",
-		source: "(64:6) {#if showPreview}",
+		source: "(76:6) {#if showPreview}",
 		ctx
 	});
 
 	return block;
 }
 
-// (67:6) {#if showOriginal}
+// (79:6) {#if showOriginal}
 function create_if_block_1$1(ctx) {
 	let option;
 
@@ -2002,7 +2008,7 @@ function create_if_block_1$1(ctx) {
 			option.textContent = `${lang("original")}`;
 			option.__value = "original";
 			option.value = option.__value;
-			add_location(option, file$4, 67, 6, 1818);
+			add_location(option, file$4, 79, 6, 2167);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, option, anchor);
@@ -2017,17 +2023,17 @@ function create_if_block_1$1(ctx) {
 		block,
 		id: create_if_block_1$1.name,
 		type: "if",
-		source: "(67:6) {#if showOriginal}",
+		source: "(79:6) {#if showOriginal}",
 		ctx
 	});
 
 	return block;
 }
 
-// (70:6) {#each formats as format}
+// (82:6) {#each formats as format}
 function create_each_block$2(ctx) {
 	let option;
-	let t_value = /*format*/ ctx[13].name + "";
+	let t_value = /*format*/ ctx[14].name + "";
 	let t;
 	let option_value_value;
 
@@ -2035,18 +2041,18 @@ function create_each_block$2(ctx) {
 		c: function create() {
 			option = element("option");
 			t = text(t_value);
-			option.__value = option_value_value = /*format*/ ctx[13].id;
+			option.__value = option_value_value = /*format*/ ctx[14].id;
 			option.value = option.__value;
-			add_location(option, file$4, 70, 6, 1921);
+			add_location(option, file$4, 82, 6, 2270);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, option, anchor);
 			append_dev(option, t);
 		},
 		p: function update(ctx, dirty) {
-			if (dirty & /*formats*/ 2 && t_value !== (t_value = /*format*/ ctx[13].name + "")) set_data_dev(t, t_value);
+			if (dirty & /*formats*/ 2 && t_value !== (t_value = /*format*/ ctx[14].name + "")) set_data_dev(t, t_value);
 
-			if (dirty & /*formats*/ 2 && option_value_value !== (option_value_value = /*format*/ ctx[13].id)) {
+			if (dirty & /*formats*/ 2 && option_value_value !== (option_value_value = /*format*/ ctx[14].id)) {
 				prop_dev(option, "__value", option_value_value);
 				option.value = option.__value;
 			}
@@ -2060,7 +2066,7 @@ function create_each_block$2(ctx) {
 		block,
 		id: create_each_block$2.name,
 		type: "each",
-		source: "(70:6) {#each formats as format}",
+		source: "(82:6) {#each formats as format}",
 		ctx
 	});
 
@@ -2117,6 +2123,7 @@ function create_fragment$5(ctx) {
 }
 
 function instance$5($$self, $$props, $$invalidate) {
+	let hideDropdown;
 	let { $$slots: slots = {}, $$scope } = $$props;
 	validate_slots("DownloadFormats", slots, []);
 	let { allowedFormats = null } = $$props;
@@ -2128,7 +2135,6 @@ function instance$5($$self, $$props, $$invalidate) {
 	let isLoading = false;
 	let showOriginal = allowedFormats === null || allowedFormats !== null && allowedFormats.includes("original");
 	let showPreview = allowedFormats === null || allowedFormats !== null && allowedFormats.includes("preview");
-	let hideDropdown = false;
 
 	onMount(() => {
 		if (allowedFormats && allowedFormats.length === 1) {
@@ -2140,6 +2146,17 @@ function instance$5($$self, $$props, $$invalidate) {
 			select();
 		}
 	});
+
+	const changes = () => {
+		if (allowedFormats && allowedFormats.length === 1) {
+			$$invalidate(0, selected = allowedFormats[0]);
+			format.update(() => allowedFormats[0]);
+			$$invalidate(2, hideDropdown = true);
+		} else {
+			fetchDownloadFormats();
+			select();
+		}
+	};
 
 	const select = () => {
 		format.update(() => selected);
@@ -2180,6 +2197,8 @@ function instance$5($$self, $$props, $$invalidate) {
 	};
 
 	$$self.$capture_state = () => ({
+		afterUpdate,
+		beforeUpdate,
 		createEventDispatcher,
 		onMount,
 		API,
@@ -2194,9 +2213,10 @@ function instance$5($$self, $$props, $$invalidate) {
 		isLoading,
 		showOriginal,
 		showPreview,
-		hideDropdown,
+		changes,
 		select,
-		fetchDownloadFormats
+		fetchDownloadFormats,
+		hideDropdown
 	});
 
 	$$self.$inject_state = $$props => {
@@ -2213,6 +2233,16 @@ function instance$5($$self, $$props, $$invalidate) {
 	if ($$props && "$$inject" in $$props) {
 		$$self.$inject_state($$props.$$inject);
 	}
+
+	$$self.$$.update = () => {
+		if ($$self.$$.dirty & /*allowedFormats*/ 64) {
+			$$invalidate(2, hideDropdown = (allowedFormats || []).length === 1);
+		}
+
+		if ($$self.$$.dirty & /*allowedFormats*/ 64) {
+			(changes());
+		}
+	};
 
 	return [
 		selected,
@@ -2744,13 +2774,13 @@ const file$2 = "src/Files.svelte";
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[35] = list[i];
-	child_ctx[36] = list;
-	child_ctx[37] = i;
+	child_ctx[37] = list[i];
+	child_ctx[38] = list;
+	child_ctx[39] = i;
 	return child_ctx;
 }
 
-// (290:4) {:catch}
+// (304:4) {:catch}
 function create_catch_block(ctx) {
 	let t;
 
@@ -2773,14 +2803,14 @@ function create_catch_block(ctx) {
 		block,
 		id: create_catch_block.name,
 		type: "catch",
-		source: "(290:4) {:catch}",
+		source: "(304:4) {:catch}",
 		ctx
 	});
 
 	return block;
 }
 
-// (269:4) {:then}
+// (283:4) {:then}
 function create_then_block(ctx) {
 	let section;
 	let ul;
@@ -2827,7 +2857,7 @@ function create_then_block(ctx) {
 	});
 
 	function downloadformats_allowedFormats_binding(value) {
-		/*downloadformats_allowedFormats_binding*/ ctx[20](value);
+		/*downloadformats_allowedFormats_binding*/ ctx[21](value);
 	}
 
 	let downloadformats_props = {};
@@ -2844,7 +2874,7 @@ function create_then_block(ctx) {
 	binding_callbacks.push(() => bind(downloadformats, "allowedFormats", downloadformats_allowedFormats_binding));
 
 	function selection_selectedFiles_binding(value) {
-		/*selection_selectedFiles_binding*/ ctx[21](value);
+		/*selection_selectedFiles_binding*/ ctx[22](value);
 	}
 
 	let selection_props = {};
@@ -2889,24 +2919,24 @@ function create_then_block(ctx) {
 			button1 = element("button");
 			t12 = text(t12_value);
 			attr_dev(ul, "class", "svelte-187qga6");
-			add_location(ul, file$2, 271, 6, 6724);
+			add_location(ul, file$2, 285, 6, 7004);
 			attr_dev(section, "class", "pixxioFiles__container svelte-187qga6");
 			toggle_class(section, "pixxioFiles__container--maxReached", /*maxReached*/ ctx[7]);
-			add_location(section, file$2, 270, 4, 6600);
+			add_location(section, file$2, 284, 4, 6880);
 			attr_dev(div0, "class", "pixxioFormats svelte-187qga6");
-			add_location(div0, file$2, 278, 4, 6930);
-			add_location(strong, file$2, 283, 9, 7107);
-			add_location(p, file$2, 283, 6, 7104);
+			add_location(div0, file$2, 292, 4, 7210);
+			add_location(strong, file$2, 297, 9, 7387);
+			add_location(p, file$2, 297, 6, 7384);
 			set_style(span, "flex-grow", "1");
-			add_location(span, file$2, 285, 6, 7280);
+			add_location(span, file$2, 299, 6, 7560);
 			attr_dev(button0, "class", "button button--secondary svelte-187qga6");
-			add_location(button0, file$2, 286, 6, 7321);
+			add_location(button0, file$2, 300, 6, 7601);
 			attr_dev(button1, "class", "button svelte-187qga6");
 			attr_dev(button1, "type", "submit");
 			button1.disabled = button1_disabled_value = !/*valid*/ ctx[8] || /*isLoading*/ ctx[6];
-			add_location(button1, file$2, 287, 6, 7430);
+			add_location(button1, file$2, 301, 6, 7710);
 			attr_dev(div1, "class", "buttonGroup buttonGroup--right svelte-187qga6");
-			add_location(div1, file$2, 282, 4, 7053);
+			add_location(div1, file$2, 296, 4, 7333);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, section, anchor);
@@ -2942,7 +2972,7 @@ function create_then_block(ctx) {
 			if (!mounted) {
 				dispose = [
 					listen_dev(section, "scroll", /*lazyLoad*/ ctx[11], false, false, false),
-					listen_dev(button0, "click", /*click_handler*/ ctx[22], false, false, false),
+					listen_dev(button0, "click", /*click_handler*/ ctx[23], false, false, false),
 					listen_dev(button1, "click", /*submit*/ ctx[14], false, false, false)
 				];
 
@@ -3047,14 +3077,14 @@ function create_then_block(ctx) {
 		block,
 		id: create_then_block.name,
 		type: "then",
-		source: "(269:4) {:then}",
+		source: "(283:4) {:then}",
 		ctx
 	});
 
 	return block;
 }
 
-// (273:8) {#each files as file}
+// (287:8) {#each files as file}
 function create_each_block(ctx) {
 	let fileitem;
 	let updating_file;
@@ -3062,21 +3092,21 @@ function create_each_block(ctx) {
 	let current;
 
 	function fileitem_file_binding(value) {
-		/*fileitem_file_binding*/ ctx[18](value, /*file*/ ctx[35], /*each_value*/ ctx[36], /*file_index*/ ctx[37]);
+		/*fileitem_file_binding*/ ctx[19](value, /*file*/ ctx[37], /*each_value*/ ctx[38], /*file_index*/ ctx[39]);
 	}
 
 	function fileitem_selected_binding(value) {
-		/*fileitem_selected_binding*/ ctx[19](value, /*file*/ ctx[35]);
+		/*fileitem_selected_binding*/ ctx[20](value, /*file*/ ctx[37]);
 	}
 
 	let fileitem_props = {};
 
-	if (/*file*/ ctx[35] !== void 0) {
-		fileitem_props.file = /*file*/ ctx[35];
+	if (/*file*/ ctx[37] !== void 0) {
+		fileitem_props.file = /*file*/ ctx[37];
 	}
 
-	if (/*file*/ ctx[35].selected !== void 0) {
-		fileitem_props.selected = /*file*/ ctx[35].selected;
+	if (/*file*/ ctx[37].selected !== void 0) {
+		fileitem_props.selected = /*file*/ ctx[37].selected;
 	}
 
 	fileitem = new FileItem({ props: fileitem_props, $$inline: true });
@@ -3099,13 +3129,13 @@ function create_each_block(ctx) {
 
 			if (!updating_file && dirty[0] & /*files*/ 32) {
 				updating_file = true;
-				fileitem_changes.file = /*file*/ ctx[35];
+				fileitem_changes.file = /*file*/ ctx[37];
 				add_flush_callback(() => updating_file = false);
 			}
 
 			if (!updating_selected && dirty[0] & /*files*/ 32) {
 				updating_selected = true;
-				fileitem_changes.selected = /*file*/ ctx[35].selected;
+				fileitem_changes.selected = /*file*/ ctx[37].selected;
 				add_flush_callback(() => updating_selected = false);
 			}
 
@@ -3129,14 +3159,14 @@ function create_each_block(ctx) {
 		block,
 		id: create_each_block.name,
 		type: "each",
-		source: "(273:8) {#each files as file}",
+		source: "(287:8) {#each files as file}",
 		ctx
 	});
 
 	return block;
 }
 
-// (267:19)      <Loading></Loading>     {:then}
+// (281:19)      <Loading></Loading>     {:then}
 function create_pending_block(ctx) {
 	let loading;
 	let current;
@@ -3169,7 +3199,7 @@ function create_pending_block(ctx) {
 		block,
 		id: create_pending_block.name,
 		type: "pending",
-		source: "(267:19)      <Loading></Loading>     {:then}",
+		source: "(281:19)      <Loading></Loading>     {:then}",
 		ctx
 	});
 
@@ -3200,7 +3230,7 @@ function create_fragment$2(ctx) {
 			info.block.c();
 			attr_dev(div, "class", "pixxioFiles svelte-187qga6");
 			toggle_class(div, "no-modal", !/*$modal*/ ctx[9]);
-			add_location(div, file$2, 265, 0, 6483);
+			add_location(div, file$2, 279, 0, 6763);
 		},
 		l: function claim(nodes) {
 			throw new Error_1("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3267,9 +3297,9 @@ function instance$2($$self, $$props, $$invalidate) {
 	let $v1;
 	let $modal;
 	validate_store(format, "format");
-	component_subscribe($$self, format, $$value => $$invalidate(16, $format = $$value));
+	component_subscribe($$self, format, $$value => $$invalidate(17, $format = $$value));
 	validate_store(v1, "v1");
-	component_subscribe($$self, v1, $$value => $$invalidate(17, $v1 = $$value));
+	component_subscribe($$self, v1, $$value => $$invalidate(18, $v1 = $$value));
 	validate_store(modal, "modal");
 	component_subscribe($$self, modal, $$value => $$invalidate(9, $modal = $$value));
 	let { $$slots: slots = {}, $$scope } = $$props;
@@ -3279,6 +3309,7 @@ function instance$2($$self, $$props, $$invalidate) {
 	let { max = 0 } = $$props;
 	let { allowedTypes = [] } = $$props;
 	let { allowedFormats = null } = $$props;
+	let { additionalResponseFields } = $$props;
 	let hasError = false;
 	let getFiles = null;
 	let page = 1;
@@ -3302,6 +3333,14 @@ function instance$2($$self, $$props, $$invalidate) {
 			}
 		});
 	});
+
+	const changes = () => {
+		if (version1) {
+			fetchFilesV1();
+		} else {
+			fetchFiles();
+		}
+	};
 
 	const lazyLoad = event => {
 		if (isLoading || files.length >= quantity) {
@@ -3407,7 +3446,8 @@ function instance$2($$self, $$props, $$invalidate) {
 					"rating",
 					"userID",
 					"fileSize",
-					"dominantColor"
+					"dominantColor",
+					...additionalResponseFields
 				],
 				previewFileOptions: [{ height: 400, quality: 60 }],
 				...filter
@@ -3518,14 +3558,14 @@ function instance$2($$self, $$props, $$invalidate) {
 				url = await fetchDownloadFormats(file.id);
 			}
 
-			preparedFiles.push({ id: file.id, url, thumbnail });
+			preparedFiles.push({ id: file.id, url, thumbnail, file });
 		}
 
 		$$invalidate(6, isLoading = false);
 		dispatch("submit", preparedFiles);
 	};
 
-	const writable_props = ["max", "allowedTypes", "allowedFormats"];
+	const writable_props = ["max", "allowedTypes", "allowedFormats", "additionalResponseFields"];
 
 	Object.keys($$props).forEach(key => {
 		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Files> was created with unknown prop '${key}'`);
@@ -3559,9 +3599,12 @@ function instance$2($$self, $$props, $$invalidate) {
 		if ("max" in $$props) $$invalidate(1, max = $$props.max);
 		if ("allowedTypes" in $$props) $$invalidate(15, allowedTypes = $$props.allowedTypes);
 		if ("allowedFormats" in $$props) $$invalidate(0, allowedFormats = $$props.allowedFormats);
+		if ("additionalResponseFields" in $$props) $$invalidate(16, additionalResponseFields = $$props.additionalResponseFields);
 	};
 
 	$$self.$capture_state = () => ({
+		afterUpdate,
+		beforeUpdate,
 		createEventDispatcher,
 		onMount,
 		DownloadFormats,
@@ -3579,6 +3622,7 @@ function instance$2($$self, $$props, $$invalidate) {
 		max,
 		allowedTypes,
 		allowedFormats,
+		additionalResponseFields,
 		hasError,
 		getFiles,
 		page,
@@ -3588,6 +3632,7 @@ function instance$2($$self, $$props, $$invalidate) {
 		isLoading,
 		query,
 		selectedFiles,
+		changes,
 		lazyLoad,
 		fetchFilesV1,
 		fetchFiles,
@@ -3610,6 +3655,7 @@ function instance$2($$self, $$props, $$invalidate) {
 		if ("max" in $$props) $$invalidate(1, max = $$props.max);
 		if ("allowedTypes" in $$props) $$invalidate(15, allowedTypes = $$props.allowedTypes);
 		if ("allowedFormats" in $$props) $$invalidate(0, allowedFormats = $$props.allowedFormats);
+		if ("additionalResponseFields" in $$props) $$invalidate(16, additionalResponseFields = $$props.additionalResponseFields);
 		if ("hasError" in $$props) hasError = $$props.hasError;
 		if ("getFiles" in $$props) $$invalidate(4, getFiles = $$props.getFiles);
 		if ("page" in $$props) page = $$props.page;
@@ -3639,16 +3685,20 @@ function instance$2($$self, $$props, $$invalidate) {
 			$$invalidate(7, maxReached = selectedCount >= max && max);
 		}
 
-		if ($$self.$$.dirty[0] & /*selectedCount, $format*/ 65544) {
+		if ($$self.$$.dirty[0] & /*selectedCount, $format*/ 131080) {
 			$$invalidate(8, valid = selectedCount >= 1 && $format);
 		}
 
-		if ($$self.$$.dirty[0] & /*$format*/ 65536) {
+		if ($$self.$$.dirty[0] & /*$format*/ 131072) {
 			downloadFormat = $format;
 		}
 
-		if ($$self.$$.dirty[0] & /*$v1*/ 131072) {
+		if ($$self.$$.dirty[0] & /*$v1*/ 262144) {
 			version1 = $v1;
+		}
+
+		if ($$self.$$.dirty[0] & /*allowedTypes*/ 32768) {
+			(changes());
 		}
 	};
 
@@ -3669,6 +3719,7 @@ function instance$2($$self, $$props, $$invalidate) {
 		deselect,
 		submit,
 		allowedTypes,
+		additionalResponseFields,
 		$format,
 		$v1,
 		fileitem_file_binding,
@@ -3692,7 +3743,8 @@ class Files extends SvelteComponentDev {
 			{
 				max: 1,
 				allowedTypes: 15,
-				allowedFormats: 0
+				allowedFormats: 0,
+				additionalResponseFields: 16
 			},
 			[-1, -1]
 		);
@@ -3703,6 +3755,13 @@ class Files extends SvelteComponentDev {
 			options,
 			id: create_fragment$2.name
 		});
+
+		const { ctx } = this.$$;
+		const props = options.props || {};
+
+		if (/*additionalResponseFields*/ ctx[16] === undefined && !("additionalResponseFields" in props)) {
+			console_1.warn("<Files> was created without expected prop 'additionalResponseFields'");
+		}
 	}
 
 	get max() {
@@ -3726,6 +3785,14 @@ class Files extends SvelteComponentDev {
 	}
 
 	set allowedFormats(value) {
+		throw new Error_1("<Files>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+	}
+
+	get additionalResponseFields() {
+		throw new Error_1("<Files>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+	}
+
+	set additionalResponseFields(value) {
 		throw new Error_1("<Files>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 	}
 }
@@ -3886,7 +3953,7 @@ class User extends SvelteComponentDev {
 /* src/App.svelte generated by Svelte v3.35.0 */
 const file = "src/App.svelte";
 
-// (62:0) {#if show}
+// (63:0) {#if show}
 function create_if_block(ctx) {
 	let main;
 	let div;
@@ -3897,19 +3964,19 @@ function create_if_block(ctx) {
 	let if_block2;
 	let t2;
 	let current;
-	let if_block0 = /*standalone*/ ctx[3] && create_if_block_4(ctx);
-	let if_block1 = /*isAuthenticated*/ ctx[6] && create_if_block_3(ctx);
+	let if_block0 = /*standalone*/ ctx[4] && create_if_block_4(ctx);
+	let if_block1 = /*isAuthenticated*/ ctx[7] && create_if_block_3(ctx);
 	const if_block_creators = [create_if_block_2, create_else_block];
 	const if_blocks = [];
 
 	function select_block_type(ctx, dirty) {
-		if (!/*isAuthenticated*/ ctx[6]) return 0;
+		if (!/*isAuthenticated*/ ctx[7]) return 0;
 		return 1;
 	}
 
 	current_block_type_index = select_block_type(ctx);
 	if_block2 = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-	let if_block3 = /*isAuthenticated*/ ctx[6] && create_if_block_1(ctx);
+	let if_block3 = /*isAuthenticated*/ ctx[7] && create_if_block_1(ctx);
 
 	const block = {
 		c: function create() {
@@ -3924,13 +3991,13 @@ function create_if_block(ctx) {
 			t2 = space();
 			if (if_block3) if_block3.c();
 			attr_dev(header, "class", "svelte-l5fo31");
-			add_location(header, file, 64, 2, 1487);
+			add_location(header, file, 65, 2, 1530);
 			attr_dev(div, "class", "container svelte-l5fo31");
-			toggle_class(div, "container--enlarge", /*enlarge*/ ctx[8]);
-			add_location(div, file, 63, 1, 1426);
+			toggle_class(div, "container--enlarge", /*enlarge*/ ctx[9]);
+			add_location(div, file, 64, 1, 1469);
 			attr_dev(main, "class", "svelte-l5fo31");
-			toggle_class(main, "no-modal", !/*config*/ ctx[4].modal);
-			add_location(main, file, 62, 0, 1387);
+			toggle_class(main, "no-modal", !/*config*/ ctx[5].modal);
+			add_location(main, file, 63, 0, 1430);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, main, anchor);
@@ -3946,9 +4013,9 @@ function create_if_block(ctx) {
 			current = true;
 		},
 		p: function update(ctx, dirty) {
-			if (/*standalone*/ ctx[3]) {
+			if (/*standalone*/ ctx[4]) {
 				if (if_block0) {
-					if (dirty & /*standalone*/ 8) {
+					if (dirty & /*standalone*/ 16) {
 						transition_in(if_block0, 1);
 					}
 				} else {
@@ -3967,11 +4034,11 @@ function create_if_block(ctx) {
 				check_outros();
 			}
 
-			if (/*isAuthenticated*/ ctx[6]) {
+			if (/*isAuthenticated*/ ctx[7]) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 
-					if (dirty & /*isAuthenticated*/ 64) {
+					if (dirty & /*isAuthenticated*/ 128) {
 						transition_in(if_block1, 1);
 					}
 				} else {
@@ -4016,11 +4083,11 @@ function create_if_block(ctx) {
 				if_block2.m(div, t2);
 			}
 
-			if (/*isAuthenticated*/ ctx[6]) {
+			if (/*isAuthenticated*/ ctx[7]) {
 				if (if_block3) {
 					if_block3.p(ctx, dirty);
 
-					if (dirty & /*isAuthenticated*/ 64) {
+					if (dirty & /*isAuthenticated*/ 128) {
 						transition_in(if_block3, 1);
 					}
 				} else {
@@ -4039,12 +4106,12 @@ function create_if_block(ctx) {
 				check_outros();
 			}
 
-			if (dirty & /*enlarge*/ 256) {
-				toggle_class(div, "container--enlarge", /*enlarge*/ ctx[8]);
+			if (dirty & /*enlarge*/ 512) {
+				toggle_class(div, "container--enlarge", /*enlarge*/ ctx[9]);
 			}
 
-			if (dirty & /*config*/ 16) {
-				toggle_class(main, "no-modal", !/*config*/ ctx[4].modal);
+			if (dirty & /*config*/ 32) {
+				toggle_class(main, "no-modal", !/*config*/ ctx[5].modal);
 			}
 		},
 		i: function intro(local) {
@@ -4075,14 +4142,14 @@ function create_if_block(ctx) {
 		block,
 		id: create_if_block.name,
 		type: "if",
-		source: "(62:0) {#if show}",
+		source: "(63:0) {#if show}",
 		ctx
 	});
 
 	return block;
 }
 
-// (66:3) {#if standalone}
+// (67:3) {#if standalone}
 function create_if_block_4(ctx) {
 	let logo;
 	let current;
@@ -4114,27 +4181,27 @@ function create_if_block_4(ctx) {
 		block,
 		id: create_if_block_4.name,
 		type: "if",
-		source: "(66:3) {#if standalone}",
+		source: "(67:3) {#if standalone}",
 		ctx
 	});
 
 	return block;
 }
 
-// (69:3) {#if isAuthenticated}
+// (70:3) {#if isAuthenticated}
 function create_if_block_3(ctx) {
 	let searchfield;
 	let updating_value;
 	let current;
 
 	function searchfield_value_binding(value) {
-		/*searchfield_value_binding*/ ctx[13](value);
+		/*searchfield_value_binding*/ ctx[14](value);
 	}
 
 	let searchfield_props = {};
 
-	if (/*searchQuery*/ ctx[7] !== void 0) {
-		searchfield_props.value = /*searchQuery*/ ctx[7];
+	if (/*searchQuery*/ ctx[8] !== void 0) {
+		searchfield_props.value = /*searchQuery*/ ctx[8];
 	}
 
 	searchfield = new SearchField({ props: searchfield_props, $$inline: true });
@@ -4151,9 +4218,9 @@ function create_if_block_3(ctx) {
 		p: function update(ctx, dirty) {
 			const searchfield_changes = {};
 
-			if (!updating_value && dirty & /*searchQuery*/ 128) {
+			if (!updating_value && dirty & /*searchQuery*/ 256) {
 				updating_value = true;
-				searchfield_changes.value = /*searchQuery*/ ctx[7];
+				searchfield_changes.value = /*searchQuery*/ ctx[8];
 				add_flush_callback(() => updating_value = false);
 			}
 
@@ -4177,32 +4244,37 @@ function create_if_block_3(ctx) {
 		block,
 		id: create_if_block_3.name,
 		type: "if",
-		source: "(69:3) {#if isAuthenticated}",
+		source: "(70:3) {#if isAuthenticated}",
 		ctx
 	});
 
 	return block;
 }
 
-// (79:2) {:else}
+// (80:2) {:else}
 function create_else_block(ctx) {
 	let section;
 	let files;
 	let updating_allowedTypes;
 	let updating_allowedFormats;
+	let updating_additionalResponseFields;
 	let updating_max;
 	let current;
 
 	function files_allowedTypes_binding(value) {
-		/*files_allowedTypes_binding*/ ctx[14](value);
+		/*files_allowedTypes_binding*/ ctx[15](value);
 	}
 
 	function files_allowedFormats_binding(value) {
-		/*files_allowedFormats_binding*/ ctx[15](value);
+		/*files_allowedFormats_binding*/ ctx[16](value);
+	}
+
+	function files_additionalResponseFields_binding(value) {
+		/*files_additionalResponseFields_binding*/ ctx[17](value);
 	}
 
 	function files_max_binding(value) {
-		/*files_max_binding*/ ctx[16](value);
+		/*files_max_binding*/ ctx[18](value);
 	}
 
 	let files_props = {};
@@ -4215,6 +4287,10 @@ function create_else_block(ctx) {
 		files_props.allowedFormats = /*allowedFormats*/ ctx[2];
 	}
 
+	if (/*additionalResponseFields*/ ctx[3] !== void 0) {
+		files_props.additionalResponseFields = /*additionalResponseFields*/ ctx[3];
+	}
+
 	if (/*max*/ ctx[0] !== void 0) {
 		files_props.max = /*max*/ ctx[0];
 	}
@@ -4222,16 +4298,17 @@ function create_else_block(ctx) {
 	files = new Files({ props: files_props, $$inline: true });
 	binding_callbacks.push(() => bind(files, "allowedTypes", files_allowedTypes_binding));
 	binding_callbacks.push(() => bind(files, "allowedFormats", files_allowedFormats_binding));
+	binding_callbacks.push(() => bind(files, "additionalResponseFields", files_additionalResponseFields_binding));
 	binding_callbacks.push(() => bind(files, "max", files_max_binding));
-	files.$on("cancel", /*cancel*/ ctx[11]);
-	files.$on("submit", /*submit*/ ctx[12]);
+	files.$on("cancel", /*cancel*/ ctx[12]);
+	files.$on("submit", /*submit*/ ctx[13]);
 
 	const block = {
 		c: function create() {
 			section = element("section");
 			create_component(files.$$.fragment);
 			attr_dev(section, "class", "pixxioSectionFiles");
-			add_location(section, file, 79, 2, 1809);
+			add_location(section, file, 80, 2, 1852);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, section, anchor);
@@ -4251,6 +4328,12 @@ function create_else_block(ctx) {
 				updating_allowedFormats = true;
 				files_changes.allowedFormats = /*allowedFormats*/ ctx[2];
 				add_flush_callback(() => updating_allowedFormats = false);
+			}
+
+			if (!updating_additionalResponseFields && dirty & /*additionalResponseFields*/ 8) {
+				updating_additionalResponseFields = true;
+				files_changes.additionalResponseFields = /*additionalResponseFields*/ ctx[3];
+				add_flush_callback(() => updating_additionalResponseFields = false);
 			}
 
 			if (!updating_max && dirty & /*max*/ 1) {
@@ -4280,28 +4363,28 @@ function create_else_block(ctx) {
 		block,
 		id: create_else_block.name,
 		type: "else",
-		source: "(79:2) {:else}",
+		source: "(80:2) {:else}",
 		ctx
 	});
 
 	return block;
 }
 
-// (75:2) {#if !isAuthenticated}
+// (76:2) {#if !isAuthenticated}
 function create_if_block_2(ctx) {
 	let section;
 	let login;
 	let current;
 	login = new Login({ $$inline: true });
-	login.$on("cancel", /*cancel*/ ctx[11]);
-	login.$on("authenticated", /*authenticated*/ ctx[9]);
+	login.$on("cancel", /*cancel*/ ctx[12]);
+	login.$on("authenticated", /*authenticated*/ ctx[10]);
 
 	const block = {
 		c: function create() {
 			section = element("section");
 			create_component(login.$$.fragment);
 			attr_dev(section, "class", "pixxioSectionLogin");
-			add_location(section, file, 75, 2, 1676);
+			add_location(section, file, 76, 2, 1719);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, section, anchor);
@@ -4328,19 +4411,19 @@ function create_if_block_2(ctx) {
 		block,
 		id: create_if_block_2.name,
 		type: "if",
-		source: "(75:2) {#if !isAuthenticated}",
+		source: "(76:2) {#if !isAuthenticated}",
 		ctx
 	});
 
 	return block;
 }
 
-// (84:2) {#if isAuthenticated}
+// (85:2) {#if isAuthenticated}
 function create_if_block_1(ctx) {
 	let user;
 	let current;
 	user = new User({ $$inline: true });
-	user.$on("logout", /*logout*/ ctx[10]);
+	user.$on("logout", /*logout*/ ctx[11]);
 
 	const block = {
 		c: function create() {
@@ -4369,7 +4452,7 @@ function create_if_block_1(ctx) {
 		block,
 		id: create_if_block_1.name,
 		type: "if",
-		source: "(84:2) {#if isAuthenticated}",
+		source: "(85:2) {#if isAuthenticated}",
 		ctx
 	});
 
@@ -4382,7 +4465,7 @@ function create_fragment(ctx) {
 	let link1;
 	let style;
 	let current;
-	let if_block = /*show*/ ctx[5] && create_if_block(ctx);
+	let if_block = /*show*/ ctx[6] && create_if_block(ctx);
 
 	const block = {
 		c: function create() {
@@ -4395,12 +4478,12 @@ function create_fragment(ctx) {
 			attr_dev(link0, "rel", "preconnect");
 			attr_dev(link0, "href", "https://fonts.gstatic.com");
 			attr_dev(link0, "crossorigin", "");
-			add_location(link0, file, 92, 2, 2139);
+			add_location(link0, file, 93, 2, 2239);
 			attr_dev(link1, "href", "https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&family=Work+Sans:wght@400;500&display=swap");
 			attr_dev(link1, "rel", "stylesheet");
-			add_location(link1, file, 93, 2, 2210);
+			add_location(link1, file, 94, 2, 2310);
 			attr_dev(style, "lang", "scss");
-			add_location(style, file, 95, 2, 2347);
+			add_location(style, file, 96, 2, 2447);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -4414,11 +4497,11 @@ function create_fragment(ctx) {
 			current = true;
 		},
 		p: function update(ctx, [dirty]) {
-			if (/*show*/ ctx[5]) {
+			if (/*show*/ ctx[6]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 
-					if (dirty & /*show*/ 32) {
+					if (dirty & /*show*/ 64) {
 						transition_in(if_block, 1);
 					}
 				} else {
@@ -4484,6 +4567,7 @@ function instance($$self, $$props, $$invalidate) {
 	let { max = 0 } = $$props;
 	let { allowedTypes = [] } = $$props;
 	let { allowedFormats = null } = $$props;
+	let { additionalResponseFields = [] } = $$props;
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
@@ -4500,11 +4584,11 @@ function instance($$self, $$props, $$invalidate) {
 
 	// authenticated
 	const authenticated = () => {
-		$$invalidate(6, isAuthenticated = true);
+		$$invalidate(7, isAuthenticated = true);
 	};
 
 	const logout = () => {
-		$$invalidate(6, isAuthenticated = false);
+		$$invalidate(7, isAuthenticated = false);
 		sessionStorage.removeItem("refreshToken");
 		sessionStorage.removeItem("domain");
 		domain.update(() => "");
@@ -4519,7 +4603,15 @@ function instance($$self, $$props, $$invalidate) {
 		dispatch("submit", detail);
 	};
 
-	const writable_props = ["standalone", "config", "show", "max", "allowedTypes", "allowedFormats"];
+	const writable_props = [
+		"standalone",
+		"config",
+		"show",
+		"max",
+		"allowedTypes",
+		"allowedFormats",
+		"additionalResponseFields"
+	];
 
 	Object.keys($$props).forEach(key => {
 		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
@@ -4527,7 +4619,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	function searchfield_value_binding(value) {
 		searchQuery = value;
-		$$invalidate(7, searchQuery);
+		$$invalidate(8, searchQuery);
 	}
 
 	function files_allowedTypes_binding(value) {
@@ -4540,18 +4632,24 @@ function instance($$self, $$props, $$invalidate) {
 		$$invalidate(2, allowedFormats);
 	}
 
+	function files_additionalResponseFields_binding(value) {
+		additionalResponseFields = value;
+		$$invalidate(3, additionalResponseFields);
+	}
+
 	function files_max_binding(value) {
 		max = value;
 		$$invalidate(0, max);
 	}
 
 	$$self.$$set = $$props => {
-		if ("standalone" in $$props) $$invalidate(3, standalone = $$props.standalone);
-		if ("config" in $$props) $$invalidate(4, config = $$props.config);
-		if ("show" in $$props) $$invalidate(5, show = $$props.show);
+		if ("standalone" in $$props) $$invalidate(4, standalone = $$props.standalone);
+		if ("config" in $$props) $$invalidate(5, config = $$props.config);
+		if ("show" in $$props) $$invalidate(6, show = $$props.show);
 		if ("max" in $$props) $$invalidate(0, max = $$props.max);
 		if ("allowedTypes" in $$props) $$invalidate(1, allowedTypes = $$props.allowedTypes);
 		if ("allowedFormats" in $$props) $$invalidate(2, allowedFormats = $$props.allowedFormats);
+		if ("additionalResponseFields" in $$props) $$invalidate(3, additionalResponseFields = $$props.additionalResponseFields);
 	};
 
 	$$self.$capture_state = () => ({
@@ -4574,6 +4672,7 @@ function instance($$self, $$props, $$invalidate) {
 		max,
 		allowedTypes,
 		allowedFormats,
+		additionalResponseFields,
 		dispatch,
 		loading,
 		isAuthenticated,
@@ -4586,16 +4685,17 @@ function instance($$self, $$props, $$invalidate) {
 	});
 
 	$$self.$inject_state = $$props => {
-		if ("standalone" in $$props) $$invalidate(3, standalone = $$props.standalone);
-		if ("config" in $$props) $$invalidate(4, config = $$props.config);
-		if ("show" in $$props) $$invalidate(5, show = $$props.show);
+		if ("standalone" in $$props) $$invalidate(4, standalone = $$props.standalone);
+		if ("config" in $$props) $$invalidate(5, config = $$props.config);
+		if ("show" in $$props) $$invalidate(6, show = $$props.show);
 		if ("max" in $$props) $$invalidate(0, max = $$props.max);
 		if ("allowedTypes" in $$props) $$invalidate(1, allowedTypes = $$props.allowedTypes);
 		if ("allowedFormats" in $$props) $$invalidate(2, allowedFormats = $$props.allowedFormats);
+		if ("additionalResponseFields" in $$props) $$invalidate(3, additionalResponseFields = $$props.additionalResponseFields);
 		if ("loading" in $$props) loading = $$props.loading;
-		if ("isAuthenticated" in $$props) $$invalidate(6, isAuthenticated = $$props.isAuthenticated);
-		if ("searchQuery" in $$props) $$invalidate(7, searchQuery = $$props.searchQuery);
-		if ("enlarge" in $$props) $$invalidate(8, enlarge = $$props.enlarge);
+		if ("isAuthenticated" in $$props) $$invalidate(7, isAuthenticated = $$props.isAuthenticated);
+		if ("searchQuery" in $$props) $$invalidate(8, searchQuery = $$props.searchQuery);
+		if ("enlarge" in $$props) $$invalidate(9, enlarge = $$props.enlarge);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -4603,8 +4703,8 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*isAuthenticated*/ 64) {
-			$$invalidate(8, enlarge = isAuthenticated);
+		if ($$self.$$.dirty & /*isAuthenticated*/ 128) {
+			$$invalidate(9, enlarge = isAuthenticated);
 		}
 	};
 
@@ -4612,6 +4712,7 @@ function instance($$self, $$props, $$invalidate) {
 		max,
 		allowedTypes,
 		allowedFormats,
+		additionalResponseFields,
 		standalone,
 		config,
 		show,
@@ -4625,6 +4726,7 @@ function instance($$self, $$props, $$invalidate) {
 		searchfield_value_binding,
 		files_allowedTypes_binding,
 		files_allowedFormats_binding,
+		files_additionalResponseFields_binding,
 		files_max_binding
 	];
 }
@@ -4634,12 +4736,13 @@ class App extends SvelteComponentDev {
 		super(options);
 
 		init(this, options, instance, create_fragment, safe_not_equal, {
-			standalone: 3,
-			config: 4,
-			show: 5,
+			standalone: 4,
+			config: 5,
+			show: 6,
 			max: 0,
 			allowedTypes: 1,
-			allowedFormats: 2
+			allowedFormats: 2,
+			additionalResponseFields: 3
 		});
 
 		dispatch_dev("SvelteRegisterComponent", {
@@ -4697,11 +4800,20 @@ class App extends SvelteComponentDev {
 	set allowedFormats(value) {
 		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
 	}
+
+	get additionalResponseFields() {
+		throw new Error("<App>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+	}
+
+	set additionalResponseFields(value) {
+		throw new Error("<App>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+	}
 }
 
 class PIXXIO {
 	constructor(config = {}, lang = 'en') {
 		this.config = config;
+		this.runningPromise;
 		this.boot();
 		this.app = new App({
 			target: this.element,
@@ -4721,17 +4833,23 @@ class PIXXIO {
 			this.element = this.config.element;
 		}
 	};
-	getMedia(config) {		
-		return new Promise((resolve, reject) => {
+	destroy() {
+		this.app.$set({ show: false });
+		this.element.parentNode.removeChild(this.element);
+	}
+	destroyMedia() {
+		this.app.$set({ show: false });
+	}
+	getMedia(config) {
+		this.runningPromise = new Promise((resolve, reject) => {
 			if(config.max) {
 				this.app.$set({ max: config.max });
 			}
-			if(config.allowedTypes) {
-				this.app.$set({ allowedTypes: config.allowedTypes });
-			}
-			if(config.allowedFormats) {
-				this.app.$set({ allowedFormats: config.allowedFormats });
-			}
+
+			this.app.$set({ allowedTypes: config.allowedTypes ?  config.allowedTypes : [] });
+			this.app.$set({ allowedFormats: config.allowedFormats ? config.allowedFormats : null});
+			this.app.$set({ additionalResponseFields: config.additionalResponseFields ? config.additionalResponseFields : []});
+			
 			this.app.$set({ show: true });
 			this.app.$on('submit', (event) => {
 				this.app.$set({ show: false });
@@ -4741,7 +4859,13 @@ class PIXXIO {
 				this.app.$set({ show: false });
 				reject();
 			});
-		}) 
+		});
+
+		return this.runningPromise;
+	}
+
+	pushMedia(config, file) {
+
 	}
 }
 

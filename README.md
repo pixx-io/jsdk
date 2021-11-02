@@ -38,34 +38,19 @@ const p = new PIXXIO({
 ```
 ### Options
 
-**appKey**
+- `appKey`: Your system Application Key.
+- `appUrl`: Your pixx.io system URL. (Mediaspace) If the `appUrl` is not set, the user will be requested to set the mediaspace on the login screen.
+- `v1`: If you are requesting a version 1 pixx.io system, you have to add the boolean flag `v1`
+- `element`: if element is set, then this element will be used as root element for the pixxio selector. Otherwise an own element is created and added to the body. 
+- `modal`: if modal is set to false. the selector won't open as an overlay. default `true`
+- `language`: currently supported are german `de` and english `en`
 
-Your system Application Key.
 
-**appUrl**
-
-Your pixx.io system URL. (Mediaspace) If the `appUrl` is not set, the user will be requested to set the mediaspace on the login screen.
-
-**v1**
-
-If you are requesting a version 1 pixx.io system, you have to add the boolean flag `v1`
-
-**element**
-
-if element is set, then this element will be used as root element for the pixxio selector. Otherwise an own element is created and added to the body. 
-
-**modal**
-
-if modal is set to false. the selector won't open as an overlay. default `true`
-
-**language**
-
-currently supported are german `de` and english `en`
 
 
 ## Methods
 
-### getMedia
+### getMedia()
 
 Opens a File Selector and returns a Promise. If the promise is resolved, you will recieve an array of selected files.
 
@@ -74,7 +59,7 @@ p.getMedia({
   max: 10
 }).then((files) => {
   /** do whatever you want **/
-})
+});
 ```
 
 #### Options
@@ -82,6 +67,7 @@ p.getMedia({
 - `max` : a number which sets the maximum of selected files. If `0` the maximum has no effect. default `0` 
 - `allowedTypes`: define the file extensions which are allowed to select. For example `['jpg', 'png']` default: `[]`
 - `allowedFormats`: define download formats which are allowed to select. For original or preview use the keys: `preview`, `original` the other system configured formats can be defined by id. So for example `['preview', 123, 321]` default: `null`
+- `additionalResponseFields`: is an array of responseFields. the possible fields are described in the official pixx.io API.
 
 #### Returns
 
@@ -92,7 +78,8 @@ an array of files like this:
   {
     id: '...', // mediaspace file id
     url: '...',
-    thumbnail: '...'
+    thumbnail: '...',
+    file: {...}
   }, 
   ...
 ]

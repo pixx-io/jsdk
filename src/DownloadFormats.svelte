@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, onMount } from "svelte";
+  import { afterUpdate, beforeUpdate, createEventDispatcher, onMount } from "svelte";
   import { API } from "./api";
   import { format } from "./store";
   import { lang } from "./translation";
@@ -17,8 +17,9 @@
   let showOriginal = allowedFormats === null || (allowedFormats !== null && allowedFormats.includes('original'));
   let showPreview = allowedFormats === null || (allowedFormats !== null && allowedFormats.includes('preview'));
 
-  let hideDropdown = false;
+  $: hideDropdown = (allowedFormats || []).length === 1;
 
+  $: allowedFormats,changes();
   
 
   onMount(() => {
@@ -31,6 +32,17 @@
       select();
     }
   });
+
+  const changes = () => {
+    if(allowedFormats && allowedFormats.length === 1) {
+      selected = allowedFormats[0];
+      format.update(() => allowedFormats[0]);
+      hideDropdown = true;
+    } else {
+      fetchDownloadFormats();
+      select();
+    }
+  };
 
   const select = () => {
     format.update(() => selected);

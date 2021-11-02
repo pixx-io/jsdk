@@ -3,6 +3,7 @@ import App from './App.svelte';
 class PIXXIO {
 	constructor(config = {}, lang = 'en') {
 		this.config = config;
+		this.runningPromise;
 		this.boot();
 		this.app = new App({
 			target: this.element,
@@ -22,17 +23,23 @@ class PIXXIO {
 			this.element = this.config.element;
 		}
 	};
-	getMedia(config) {		
-		return new Promise((resolve, reject) => {
+	destroy() {
+		this.app.$set({ show: false });
+		this.element.parentNode.removeChild(this.element);
+	}
+	destroyMedia() {
+		this.app.$set({ show: false });
+	}
+	getMedia(config) {
+		this.runningPromise = new Promise((resolve, reject) => {
 			if(config.max) {
 				this.app.$set({ max: config.max });
 			}
-			if(config.allowedTypes) {
-				this.app.$set({ allowedTypes: config.allowedTypes });
-			}
-			if(config.allowedFormats) {
-				this.app.$set({ allowedFormats: config.allowedFormats });
-			}
+
+			this.app.$set({ allowedTypes: config.allowedTypes ?  config.allowedTypes : [] });
+			this.app.$set({ allowedFormats: config.allowedFormats ? config.allowedFormats : null});
+			this.app.$set({ additionalResponseFields: config.additionalResponseFields ? config.additionalResponseFields : []});
+			
 			this.app.$set({ show: true });
 			this.app.$on('submit', (event) => {
 				this.app.$set({ show: false });
@@ -42,7 +49,13 @@ class PIXXIO {
 				this.app.$set({ show: false });
 				reject();
 			})
-		}) 
+		});
+
+		return this.runningPromise;
+	}
+
+	pushMedia(config, file) {
+
 	}
 }
 

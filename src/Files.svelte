@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, onMount } from "svelte";
+  import { afterUpdate, beforeUpdate, createEventDispatcher, onMount } from "svelte";
   import DownloadFormats from "./DownloadFormats.svelte";
   import Selection from "./Selection.svelte";
   import FileItem from "./FileItem.svelte";
@@ -14,6 +14,7 @@
   export let max = 0;
   export let allowedTypes = [];
   export let allowedFormats = null;
+  export let additionalResponseFields;
 
   let hasError = false;
   let getFiles = null;
@@ -30,6 +31,8 @@
   $: downloadFormat = $format;
   $: version1 = $v1;
 
+  $: allowedTypes,changes();
+
   onMount(() => {
     getFiles = version1 ? fetchFilesV1() : fetchFiles();
     searchTerm.subscribe(value => {
@@ -41,6 +44,15 @@
       }
     })
   });
+
+  const changes = () => {
+    if(version1) {
+        fetchFilesV1();
+      } else {
+        fetchFiles();
+      }
+    
+  };
 
   const lazyLoad = (event) => {
       if (isLoading || files.length >= quantity) { return; }
@@ -145,7 +157,8 @@
           "rating",
           "userID",
           "fileSize",
-          "dominantColor"
+          "dominantColor",
+          ...additionalResponseFields
         ],
         previewFileOptions: [
           {
@@ -255,7 +268,8 @@
       preparedFiles.push({
         id: file.id,
         url,
-        thumbnail
+        thumbnail,
+        file: file
       })
     }
     isLoading = false;
