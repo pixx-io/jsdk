@@ -1,3 +1,4 @@
+import { API } from './api';
 import App from './App.svelte';
 
 class PIXXIO {
@@ -32,6 +33,7 @@ class PIXXIO {
 	}
 	getMedia(config) {
 		this.runningPromise = new Promise((resolve, reject) => {
+			this.app.$set({ mode: 'get' });
 			if(config.max) {
 				this.app.$set({ max: config.max });
 			}
@@ -54,8 +56,20 @@ class PIXXIO {
 		return this.runningPromise;
 	}
 
-	pushMedia(config, file) {
-
+	pushMedia(config) {
+		return new Promise((resolve, reject) => {
+			this.app.$set({ mode: 'upload' });
+			this.app.$set({ uploadConfig: config });
+			this.app.$set({ show: true });
+			this.app.$on('uploaded', (event) => {
+				this.app.$set({ show: false });
+				resolve(event.detail);
+			})
+			this.app.$on('cancel', () => {
+				this.app.$set({ show: false });
+				reject();
+			})
+		});
 	}
 }
 

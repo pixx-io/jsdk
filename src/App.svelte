@@ -6,6 +6,8 @@
 	import User from './User.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { domain, appKey, v1, modal, refreshToken, language } from './store';
+  import Loading from './Loading.svelte';
+	import Upload from './Upload.svelte';
 
 	/* Props */
 	export let standalone = false;
@@ -21,6 +23,8 @@
 	export let allowedTypes = [];
 	export let allowedFormats = null;
 	export let additionalResponseFields = [];
+	export let mode = 'get';
+	export let uploadConfig = {};
 
 	const dispatch = createEventDispatcher();
 
@@ -42,6 +46,9 @@
 	// authenticated
 	const authenticated = () => {
 		isAuthenticated = true;
+		if (mode === 'upload') {
+			// do upload
+		}
 	}
 
 	const logout = () => {
@@ -67,7 +74,7 @@
 			{#if standalone}
 			<Logo></Logo>
 			{/if}
-			{#if isAuthenticated}
+			{#if isAuthenticated && mode == 'get'}
 			<SearchField bind:value={searchQuery}></SearchField>
 			{/if}
 			
@@ -77,9 +84,13 @@
 		<section class="pixxioSectionLogin">
 			<Login on:cancel={cancel} on:authenticated={authenticated}></Login>
 		</section>
-		{:else}
+		{:else if mode == 'get'}
 		<section class="pixxioSectionFiles">
 			<Files on:cancel={cancel} bind:allowedTypes={allowedTypes} bind:allowedFormats={allowedFormats} bind:additionalResponseFields={additionalResponseFields} on:submit={submit} bind:max={max}></Files>
+		</section>
+		{:else if mode == 'upload'}
+		<section>
+			<Upload bind:config={uploadConfig}></Upload>
 		</section>
 		{/if}
 		{#if isAuthenticated}
@@ -88,6 +99,7 @@
 	</div>
 </main>
 {/if}
+
 
 <svelte:head>
   <!-- Google Font -->
