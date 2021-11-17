@@ -1,4 +1,4 @@
-import { accessToken, appKey, domain, refreshToken, v1 } from "./store";
+import { accessToken, appKey, domain, refreshToken } from "./store/store";
 
 export class API {
 
@@ -6,15 +6,14 @@ export class API {
   refreshToken = '';
   domain = '';
   appKey = '';
-  v1 = false;
 
   constructor(
   ) {
     domain.subscribe(value => this.domain = value);
     appKey.subscribe(value => this.appKey = value);
     refreshToken.subscribe(value => this.refreshToken = value);
+    
     accessToken.subscribe(value => this.accessToken = value);
-    v1.subscribe(value => this.v1 = value);
   }
 
   get(path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true)  {
@@ -40,13 +39,6 @@ export class API {
         applicationKey: this.appKey
       };
 
-      if(this.v1) {
-        requestData = {
-          refreshToken: this.refreshToken,
-          apiKey: this.appKey
-        }
-      }
-
       this.post('/accessToken', requestData, false)
       .then((data) => {
         if(data.success) {
@@ -64,10 +56,7 @@ export class API {
   call(method, path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true) {
     return new Promise((resolve, reject) => {
       const request = (requestData, headers) => {
-        const url = 'https://' + this.domain.replace(/(http|https):\/\//, '') + (this.v1 ? '/cgi-bin/api/pixxio-api.pl/json' : '/gobackend') + path;
-        if (this.v1 && this.accessToken) {
-          requestData.accessToken = this.accessToken;
-        }
+        const url = 'https://' + this.domain.replace(/(http|https):\/\//, '') + '/gobackend' + path;
         let params = requestData;
         if (useURLSearchParams) {
           params = new URLSearchParams();
@@ -111,8 +100,6 @@ export class API {
             resolve(data);
           } else {
             switch (data.errorcode) {
-              case '2003':  // API v1
-              case '2006':  // API v1
               case 15007:  // API v2
               case 15008:  // API v2
                 // get new access Token and retry request
@@ -136,13 +123,9 @@ export class API {
       if (useAccessToken) {
         const accessToken = this.accessToken;
         let headers = {};
-        if (!this.v1) {
-          headers = {  // API v2
-            Authorization: 'Key ' + accessToken
-          };
-        } else {
-          parameters.accessToken = accessToken;  // API v1
-        }
+        headers = {  // API v2
+          Authorization: 'Key ' + accessToken
+        };
         request(parameters, headers);
       } else {
         request(parameters);

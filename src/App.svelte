@@ -5,56 +5,25 @@
 	import Files from './Files.svelte';
 	import User from './User.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { domain, appKey, v1, modal, refreshToken, language } from './store';
-  import Loading from './Loading.svelte';
+	import { domain, appKey, modal, refreshToken, language, isAuthenticated, mode, show } from './store/store';
 	import Upload from './Upload.svelte';
 
 	/* Props */
-	export let standalone = false;
-	export let config = {
-		appUrl: '',
-		appKey: '',
-		v1: false,
-		modal: true,
-		language: 'en'
-	};
-	export let show = false;
-	export let max = 0;
-	export let allowedTypes = [];
-	export let allowedFormats = null;
-	export let additionalResponseFields = [];
-	export let mode = 'get';
 	export let uploadConfig = {};
 
 	const dispatch = createEventDispatcher();
 
-	onMount(async () => {
-		domain.update(() => config.appUrl);
-		appKey.update(() => config.appKey);
-		v1.update(() => config.v1 || false);
-		modal.update(() => config.modal);
-		language.update(() => config.language);
-	});
-
-
-	let loading = false;
-	let isAuthenticated = false;
 	let searchQuery = '';
-
-	$: enlarge = isAuthenticated;
 	
 	// authenticated
 	const authenticated = () => {
-		isAuthenticated = true;
-		if (mode === 'upload') {
-			// do upload
-		}
+		isAuthenticated.update(() => true);
 	}
 
 	const logout = () => {
-		isAuthenticated = false;
 		sessionStorage.removeItem('refreshToken');
 		sessionStorage.removeItem('domain');
+		isAuthenticated.update(() => false);
 		domain.update(() => '');
 		refreshToken.update(() => '');
 	}
@@ -66,34 +35,45 @@
 	const submit = ({detail}) => {
 		dispatch('submit', detail)
 	}
+
+	const uploaded = ({detail}) => {
+		dispatch('uploaded', detail)
+	}
+	const uploadError = ({detail}) => {
+		dispatch('uploadError', detail)
+	}
 </script>
-{#if show}
-<main class:no-modal={!config.modal}>
-	<div class="container" class:container--enlarge={enlarge}>
+{#if $show}
+<main class:no-modal={!$modal}>
+	<div class="container" class:container--enlarge={$isAuthenticated}>
 		<header>
-			{#if standalone}
 			<Logo></Logo>
+			{#if $isAuthenticated && $mode == 'get'}
+				<SearchField bind:value={searchQuery}></SearchField>
 			{/if}
-			{#if isAuthenticated && mode == 'get'}
-			<SearchField bind:value={searchQuery}></SearchField>
-			{/if}
-			
+			<a href="#" on:click={cancel} class="close"></a>
 		</header>
 
-		{#if !isAuthenticated}
+		{#if !$isAuthenticated}
 		<section class="pixxioSectionLogin">
-			<Login on:cancel={cancel} on:authenticated={authenticated}></Login>
+			<Login 
+				on:cancel={cancel} 
+				on:authenticated={authenticated}
+			></Login>
 		</section>
-		{:else if mode == 'get'}
+		{:else if $mode == 'get'}
 		<section class="pixxioSectionFiles">
-			<Files on:cancel={cancel} bind:allowedTypes={allowedTypes} bind:allowedFormats={allowedFormats} bind:additionalResponseFields={additionalResponseFields} on:submit={submit} bind:max={max}></Files>
+			<Files 
+				on:cancel={cancel} 
+				on:submit={submit}
+			></Files>
 		</section>
-		{:else if mode == 'upload'}
+		{:else if $mode == 'upload'}
 		<section>
-			<Upload bind:config={uploadConfig}></Upload>
+			<Upload bind:config={uploadConfig} on:uploaded={uploaded} on:error={uploadError}></Upload>
 		</section>
 		{/if}
-		{#if isAuthenticated}
+		{#if $isAuthenticated}
 			<User on:logout={logout}></User>
 		{/if}
 	</div>
@@ -122,6 +102,28 @@
 	@import './styles/fields';
 	@import './styles/button';
 
+	a.close {
+		display: block;
+		position: absolute;
+		top: 15px;
+		right: 15px;
+		width: 30px;
+		height: 30px;
+		&:after,
+		&:before {
+			content: '';
+			width: 80%;
+			height: 2px;
+			background: #212121;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%) rotate(45deg);
+		}
+		&:after {
+			transform: translate(-50%, -50%) rotate(-45deg);
+		}
+	}
 	main {
 		position: fixed;
 		top: 0;
@@ -151,6 +153,8 @@
 				color: darken($primary, 10%);
 			}
 		}
+
+		
 
 		.container {
 			border-radius: 10px;
@@ -184,15 +188,21 @@
 			right: auto;
 			bottom: auto;
 			background: transparent;
-			padding: 0;
+			padding: 20px;
 			header {
-				padding: 30px 0 0;
+				padding: 0;
+			}
+
+			a.close {
+				top: 0;
+				right: 0;
 			}
 
 			.container {
 				border-radius: 0;
 				padding: 0;
 				max-width: none;
+				padding: 0;
 				&--enlarge {
 					max-width: none;
 				}

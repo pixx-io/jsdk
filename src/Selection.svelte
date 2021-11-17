@@ -1,6 +1,6 @@
 <script>
-import { createEventDispatcher } from "svelte";
-
+  import { createEventDispatcher } from "svelte";
+  import { showSelection } from './store/media';
 
   const dispatch = createEventDispatcher();
   export let selectedFiles = [];
@@ -9,11 +9,13 @@ import { createEventDispatcher } from "svelte";
 </script>
 
 <ul>
-  {#each selected as file}
-    <li class="pixxioSelection__file" on:click={dispatch('deselect', file)}>
-      <img loading="lazy" src={file.imagePath || file.modifiedPreviewFileURLs[0]} alt={file.fileName}>
-    </li>
-  {/each}
+  {#if showSelection}
+    {#each selected as file}
+      <li class="pixxioSelection__file" on:click={dispatch('deselect', file)}>
+        <img loading="lazy" src={file.imagePath || file.modifiedPreviewFileURLs[0]} alt={file.fileName}>
+      </li>
+    {/each}
+  {/if}
   {#if selectedFiles.length > 3}
   <li>
     + {selectedFiles.length - selected.length}

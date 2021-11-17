@@ -1,18 +1,15 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domain, appKey, refreshToken, v1, modal } from './store';
-import { API } from "./api";
-import Loading from "./Loading.svelte";
+  import { domain, appKey, refreshToken, modal } from './store/store';
+  import { API } from "./api";
+  import Loading from "./Loading.svelte";
   
   const dispatch = createEventDispatcher();
   const api = new API();
 
   let username = '';
   let password = '';
-  $: domainVal = $domain;
-  $: appKeyVal = $appKey;
-  $: version1 = $v1;
   let hasError = false;
   let isLoading = false;
   let mediaspace = '';
@@ -25,7 +22,7 @@ import Loading from "./Loading.svelte";
   if (mediaspace) {
     domain.update(() => mediaspace);
   }
-  if(token && (domainVal || mediaspace)) {
+  if(token && ($domain || mediaspace)) {
     isLoading = true;
     refreshToken.update(() => token);
     
@@ -38,13 +35,12 @@ import Loading from "./Loading.svelte";
     })
   }
 
-  let handleLogin = null;
   const login = async () => {
     isLoading = true;
     hasError = false;
     try {
       const formData = new FormData();
-      formData.set('applicationKey', appKeyVal);
+      formData.set('applicationKey', $appKey);
       formData.set('userNameOrEmail', username);
       formData.set('password', password);
 
@@ -77,57 +73,6 @@ import Loading from "./Loading.svelte";
     }
   }
 
-  const loginV1 = async () => {
-    isLoading = true;
-    hasError = false;
-    try {
-      const formData = new FormData();
-      formData.set('apiKey', appKeyVal);
-      formData.set('options', JSON.stringify({ username, password }));
-      const requestData = {
-        apiKey: appKeyVal,
-        options: { username, password }
-      };
-
-      let params = new URLSearchParams();
-      for (const key of Object.keys(requestData)) {
-        let value = requestData[key];
-        if (typeof value === 'object') {
-          value = JSON.stringify(value);
-        }
-        params.set(key, value);
-      }
-      params = params.toString();
-
-      const data = await fetch(`${domainVal}/cgi-bin/api/pixxio-api.pl/json/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: params
-      });
-
-      const response = await data.json();
-
-      isLoading = false;
-
-      if (response.success !== 'true') {
-        hasError = true;
-        throw new Error();
-      }
-
-      // store refreshToken 
-      refreshToken.update(() => response.refreshToken);
-      sessionStorage.setItem('refreshToken', response.refreshToken);
-      
-      api.callAccessToken().then(() => {
-        dispatch('authenticated');
-      });
-    } catch(error) {
-      isLoading = false;
-      hasError = true;
-    }
-  }
   const cancel = () => {
     dispatch('cancel');
   }
@@ -136,7 +81,7 @@ import Loading from "./Loading.svelte";
 <div class="login fields" class:no-modal="{!$modal}">
   <h2>{lang('signin')}</h2>
   <p>{lang('signin_description')}</p>
-  {#if !domainVal}
+  {#if !$domain}
   <div class="field">
     <input bind:value={mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " />
     <label for="pixxio-mediaspace">{lang('mediaspace')}</label>
@@ -155,7 +100,7 @@ import Loading from "./Loading.svelte";
   {/if}
   <div class="buttonGroup">
     <button class="button button--secondary" on:click={cancel}>{lang('cancel')}</button>
-    <button class="button" type="submit" disabled='{isLoading}' on:click={version1 ? loginV1 : login}>{lang('signin')}</button>
+    <button class="button" type="submit" disabled='{isLoading}' on:click={login}>{lang('signin')}</button>
   </div>
   {#if isLoading}
     <Loading></Loading>
@@ -188,7 +133,7 @@ import Loading from "./Loading.svelte";
 
     &.no-modal {
       padding: 0;
-      max-width: none;
+      max-width: 300px;
     }
   }
   

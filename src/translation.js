@@ -1,4 +1,4 @@
-import { language } from "./store";
+import { language } from "./store/store";
 
 export function lang(key) {
 
@@ -20,7 +20,9 @@ export function lang(key) {
       original: 'Original',
       preview: 'Vorschau',
       logged_in_as: 'Du bist angemeldet als: ',
-      logout: 'Ausloggen'
+      logout: 'Ausloggen',
+      duplicate_file: 'Duplikat: Die Datei existiert bereits.',
+      success_upload_file: 'Die Datei wurde erfolgreich hochgeladen.'
     },
     en: {
       mediaspace: 'Mediaspace (example.px.media)',
@@ -36,7 +38,9 @@ export function lang(key) {
       original: 'Original',
       preview: 'Preview',
       logged_in_as: 'You are logged in as: ',
-      logout: 'Logout'
+      logout: 'Logout',
+      duplicate_file: 'Duplicate file: The file already exists.',
+      success_upload_file: 'File successfully uploaded.'
     }
   }
   return lines[lang || 'en'][key];
