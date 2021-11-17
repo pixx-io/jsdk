@@ -1,6 +1,5 @@
 <script>
-  import { searchTerm } from "./store";
-
+  import { searchTerm } from "./store/media";
   export let value = '';
   
 

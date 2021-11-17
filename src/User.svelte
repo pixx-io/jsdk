@@ -2,7 +2,7 @@
 import { API } from "./api";
 
 import { lang } from "./translation";
-import { domain } from "./store";
+import { domain, modal } from "./store/store";
 import { createEventDispatcher } from "svelte";
 
 const api = new API();
@@ -23,13 +23,17 @@ const logout = () => {
 
 </script>
 
-<small>{lang('logged_in_as')} {username} in <a href="https://{$domain}" target="_blank">{$domain}</a>. <a href="#" on:click={logout}>Ausloggen</a></small>
+<small class:no-modal={!$modal}>{lang('logged_in_as')} {username} in <a href="https://{$domain}" target="_blank">{$domain}</a>. <a href="#" on:click={logout}>Ausloggen</a></small>
 
 <style lang="scss">
   @import './styles/variables';
   small {
     opacity: 0.75;
     display: block;
+    padding: 0 30px;
+    &.no-modal {
+      padding: 0;
+    }
     a {
       color: $primary;
       text-decoration: none;

@@ -1,10 +1,15 @@
+import { get } from 'svelte/store';
+import { API } from './api';
 import App from './App.svelte';
+import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields } from './store/media';
+import { domain, language, appKey, modal, show, isAuthenticated, mode } from './store/store';
 
 class PIXXIO {
 	constructor(config = {}, lang = 'en') {
 		this.config = config;
 		this.runningPromise;
 		this.boot();
+		this.storeConfig(config);
 		this.app = new App({
 			target: this.element,
 			props: {
@@ -12,6 +17,12 @@ class PIXXIO {
 				config
 			}
 		});
+	}
+	storeConfig(config) {
+		language.update(() => config?.language || 'en');
+		domain.update(() => config?.appUrl || '');
+		appKey.update(() => config?.appKey || '');
+		modal.update(() => config?.modal);
 	}
 	boot() {
 		if (!this.config.element) {
@@ -24,38 +35,115 @@ class PIXXIO {
 		}
 	};
 	destroy() {
-		this.app.$set({ show: false });
+		show.update(() => false);
 		this.element.parentNode.removeChild(this.element);
 	}
 	destroyMedia() {
-		this.app.$set({ show: false });
+		show.update(() => false);
 	}
 	getMedia(config) {
-		this.runningPromise = new Promise((resolve, reject) => {
-			if(config.max) {
-				this.app.$set({ max: config.max });
-			}
+		allowTypes.update(() => config?.allowTypes || []);
+		allowFormats.update(() => config?.allowFormats || null);
+		maxFiles.update(() => config?.max > 0 ? (config?.max || 0) : 0);
+		additionalResponseFields.update(() => config?.additionalResponseFields || []);
 
-			this.app.$set({ allowedTypes: config.allowedTypes ?  config.allowedTypes : [] });
-			this.app.$set({ allowedFormats: config.allowedFormats ? config.allowedFormats : null});
-			this.app.$set({ additionalResponseFields: config.additionalResponseFields ? config.additionalResponseFields : []});
-			
-			this.app.$set({ show: true });
+		const calledTime = Date.now();
+		changed.update(() => calledTime);
+		mode.update(() => 'get');
+
+		return new Promise((resolve, reject) => {
+			show.update(() => true);
 			this.app.$on('submit', (event) => {
-				this.app.$set({ show: false });
+				show.update(() => false);
 				resolve(event.detail);
 			})
 			this.app.$on('cancel', () => {
-				this.app.$set({ show: false });
+				show.update(() => false);
+				reject();
+			})
+			changed.subscribe((value) => {
+				if (calledTime !== value) {
+					reject();
+				}
+			})
+		});
+	}
+
+	on(eventKey, callback) {
+		switch(eventKey) {
+			case 'authState':
+				isAuthenticated.subscribe(value => {
+					if (callback && typeof callback === 'function') {
+						callback({login: value})
+					}
+				});
+				break;
+			default:
+				console.error('Error: Event does not extist');
+				break;	
+		}
+		
+	}
+
+	pushMedia(config) {
+		const calledTime = Date.now();
+		changed.update(() => calledTime);
+		mode.update(() => 'upload');
+		
+		return new Promise((resolve, reject) => {
+			show.update(() => true);
+			this.app.$set({ uploadConfig: config });
+			this.app.$on('uploaded', (event) => {
+				resolve(event.detail);
+			})
+			this.app.$on('uploadError', () => {
+				reject();
+			})
+			this.app.$on('cancel', () => {
+				show.update(() => false)
 				reject();
 			})
 		});
-
-		return this.runningPromise;
 	}
 
-	pushMedia(config, file) {
-
+	getFileById(id, options) {
+		const api = new API();
+		const auth = get(isAuthenticated);
+		return new Promise(async (resolve, reject) => {
+			if (!auth) {
+				reject();
+			} else {
+				try {
+					const _options = { 
+						responseFields: [
+							"id",
+							"originalFileURL",
+							"width",
+							"height",
+							"fileName",
+							"fileExtension",
+							"uploadDate",
+							"modifyDate",
+							"rating",
+							"userID",
+							"fileSize",
+							"dominantColor",
+							"versions"
+						],
+						...(options || {})
+					}
+		
+					const data = await api.get(`/files/${id}`, _options);
+					if(!data.success) {
+						throw new Error(data.errormessage)
+					}
+					resolve(data);
+				} catch(e) {
+					console.log(e);
+					reject(e);
+				}
+			}
+		})
 	}
 }
 

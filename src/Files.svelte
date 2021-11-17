@@ -4,19 +4,17 @@
   import Selection from "./Selection.svelte";
   import FileItem from "./FileItem.svelte";
   import Loading from './Loading.svelte';
-  import { searchTerm, format, v1, modal } from './store';
+  import { modal } from './store/store';
+  import { searchTerm, format, maxFiles, showSelection, allowTypes, additionalResponseFields, changed } from './store/media';
   import {API} from './api'
-  import { lang } from './translation'
+  import { lang } from './translation';
+  import Error from './Error.svelte';
 
   const dispatch = createEventDispatcher();
   const api = new API();
 
-  export let max = 0;
-  export let allowedTypes = [];
-  export let allowedFormats = null;
-  export let additionalResponseFields;
+  $: max = $maxFiles;
 
-  let hasError = false;
   let getFiles = null;
   let page = 1;
   let pageSize = 50;
@@ -26,33 +24,23 @@
   let query = '';
   let selectedFiles = [];
   $: selectedCount = selectedFiles.length;
-  $: maxReached = selectedCount >= max && max;
+  $: maxReached = selectedCount >= max && max > 0;
   $: valid = selectedCount >= 1 && $format;
   $: downloadFormat = $format;
-  $: version1 = $v1;
-
-  $: allowedTypes,changes();
 
   onMount(() => {
-    getFiles = version1 ? fetchFilesV1() : fetchFiles();
+    getFiles = fetchFiles();
     searchTerm.subscribe(value => {
       query = value;
-      if(version1) {
-        fetchFilesV1();
-      } else {
-        fetchFiles();
-      }
+      changes();
     })
+    changed.subscribe(() => changes())
   });
 
   const changes = () => {
-    if(version1) {
-        fetchFilesV1();
-      } else {
-        fetchFiles();
-      }
-    
+    fetchFiles();
   };
+
 
   const lazyLoad = (event) => {
       if (isLoading || files.length >= quantity) { return; }
@@ -60,45 +48,8 @@
 
       if (delta < event.target.offsetHeight/2) {
         page += 1;
-        if(version1) {
-          fetchFilesV1(true);
-        } else {
-          fetchFiles(true);
-        }
+        fetchFiles(true);
       }
-  }
-
-  const fetchFilesV1 = async (attach) => {
-    try {
-      isLoading = true;
-      const filter = query ? {
-        searchTerm: query
-      } : {};
-      const options = { 
-        pagination: pageSize + '-' + page,
-        ...filter
-      }
-      const data = await api.get(`/files`, { options: options });
-      if(data.success !== 'true') {
-        throw new Error(data.errormessage)
-      }
-
-      data.files = data.files.map(file => {
-        file.selected = selectedFiles.find(f => f.id === file.id);
-        return file;
-      });
-      
-      if (attach) {
-        files = [...files, ...data.files];
-      } else {
-        files = data.files;
-        quantity = data.quantity;
-      }
-      isLoading = false;
-    } catch(e) {
-      hasError = true;
-      isLoading = false;
-    }
   }
 
   const fetchFiles = async (attach) => {
@@ -108,12 +59,11 @@
       let allowedTypeFilter = [];
       let queryFilter = [];
       let filter = {};
-
-      if (allowedTypes.length) {
+      if ($allowTypes.length) {
         allowedTypeFilter = [{
           filterType: 'connectorOr',
           filters: [
-            ...allowedTypes.map(type => ({
+            ...$allowTypes.map(type => ({
               filterType: 'fileExtension',
               fileExtension: type
             }))
@@ -128,7 +78,7 @@
         }]
       }
 
-      if (query || allowedTypes.length) {
+      if (query || $allowTypes.length) {
         filter = {
           filter: {
             filterType: 'connectorAnd',
@@ -158,7 +108,7 @@
           "userID",
           "fileSize",
           "dominantColor",
-          ...additionalResponseFields
+          ...$additionalResponseFields
         ],
         previewFileOptions: [
           {
@@ -200,8 +150,11 @@
     const file = files.find((f) => f.id === event.detail.id);
     file.selected = true;
     files = files;
-
-    selectedFiles = [event.detail, ...selectedFiles.slice(0, max-1)];
+    if (max > 0) {
+      selectedFiles = [event.detail, ...selectedFiles.slice(0, max-1)];
+    } else {
+      selectedFiles = [event.detail, ...selectedFiles];
+    }
     markSelected();
   }
 
@@ -250,15 +203,8 @@
     isLoading = true;
     for (let i = 0; i < selectedFiles.length; i += 1) {
       const file = selectedFiles[i];
-      let url = '';
-      let thumbnail = '';
-      if (version1) {
-        url = downloadFormat === 'preview' ? file.imagePath : file.originalPath,
-        thumbnail = file.imagePath;
-      } else {
-        url = downloadFormat === 'preview' ? file.previewFileURL : file.originalFileURL
-        thumbnail = file.modifiedPreviewFileURLs[0];
-      }
+      const url = downloadFormat === 'preview' ? file.previewFileURL : file.originalFileURL
+      const thumbnail = file.modifiedPreviewFileURLs[0];
 
       if (!['preview', 'original'].includes(downloadFormat)) {
         // catch format
@@ -278,8 +224,8 @@
 </script>
 
 <div class="pixxioFiles" class:no-modal={!$modal}>
-  {#await getFiles}
-    <Loading></Loading>
+    {#await getFiles}
+      <Loading></Loading>
     {:then} 
     
     <section class="pixxioFiles__container" on:scroll={lazyLoad} class:pixxioFiles__container--maxReached={maxReached} > 
@@ -291,14 +237,16 @@
     </section>
     
     <div class="pixxioFormats">
-      <DownloadFormats bind:allowedFormats={allowedFormats}></DownloadFormats>
+      
     </div>
 
     <div class="buttonGroup buttonGroup--right">
-      <p><strong>{selectedCount}</strong> {max ? '/' + max : ''} {lang('selected')}</p>
-      <Selection on:deselect={deselect} bind:selectedFiles={selectedFiles}></Selection>
+      <p><strong>{selectedCount}</strong> {$maxFiles > 0 ? '/' + $maxFiles : ''} {lang('selected')}</p>
+      {#if $showSelection}
+        <Selection on:deselect={deselect} bind:selectedFiles={selectedFiles}></Selection>
+      {/if}
       <span style="flex-grow: 1"></span>
-      <button class="button button--secondary" on:click={() => dispatch('cancel')}>{lang('cancel')}</button>
+      <DownloadFormats></DownloadFormats>
       <button class="button" type="submit" disabled={!valid || isLoading} on:click={submit} >{lang('select')}</button>
     </div>
     {:catch}
@@ -328,7 +276,7 @@
     &.no-modal {
       section {
         height: auto;
-        max-height: 70vh;
+        max-height: 500px;
         padding: 0;
       }
       .buttonGroup {
