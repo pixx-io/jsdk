@@ -24,11 +24,15 @@
       const formData = new FormData();
       formData.set('asynchronousConversion', false);
       Object.keys(config).forEach(key => {
-        formData.set(key, config[key]);
+        if (key !== 'file') {
+          formData.set(key, JSON.stringify(config[key]));
+        } else {
+          formData.set(key, config[key]);
+        }
       })
       const response = await api.post('/files', formData, true, null, false, false);
       loading = false;
-      dispatch('uploaded');
+      dispatch('uploaded', response);
       if (response.success && response.isDuplicate) {
         errorMessage = lang('duplicate_file');
         dispatch('error', lang('duplicate_file'));

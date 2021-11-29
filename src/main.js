@@ -106,6 +106,40 @@ class PIXXIO {
 		});
 	}
 
+	bulkMainVersionCheck(ids) {
+		const api = new API();
+		const auth = get(isAuthenticated);
+		return new Promise(async (resolve, reject) => {
+			if (!auth) {
+				reject();
+			} else {
+				try {
+					const _options = { 
+						page: 1,
+						pageSize: ids.length,
+						responseFields: [
+							"id",
+							"isMainVersion",
+						],
+						filter: {
+								filterType: 'files',
+								fileIDs: ids
+							}
+					}
+		
+					const data = await api.get(`/files`, _options);
+					if(!data.success) {
+						throw new Error(data.errormessage)
+					}
+					resolve(data.files);
+				} catch(e) {
+					console.log(e);
+					reject(e);
+				}
+			}
+		})
+	}
+
 	getFileById(id, options) {
 		const api = new API();
 		const auth = get(isAuthenticated);

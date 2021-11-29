@@ -1,5 +1,5 @@
 
-(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
+(function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(window.document);
 function noop() { }
 function assign(tar, src) {
     // @ts-ignore
@@ -29,14 +29,6 @@ function is_function(thing) {
 }
 function safe_not_equal(a, b) {
     return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
-}
-let src_url_equal_anchor;
-function src_url_equal(element_src, url) {
-    if (!src_url_equal_anchor) {
-        src_url_equal_anchor = document.createElement('a');
-    }
-    src_url_equal_anchor.href = url;
-    return element_src === src_url_equal_anchor.href;
 }
 function is_empty(obj) {
     return Object.keys(obj).length === 0;
@@ -90,22 +82,12 @@ function get_slot_changes(definition, $$scope, dirty, fn) {
     }
     return $$scope.dirty;
 }
-function update_slot_base(slot, slot_definition, ctx, $$scope, slot_changes, get_slot_context_fn) {
+function update_slot(slot, slot_definition, ctx, $$scope, dirty, get_slot_changes_fn, get_slot_context_fn) {
+    const slot_changes = get_slot_changes(slot_definition, $$scope, dirty, get_slot_changes_fn);
     if (slot_changes) {
         const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
         slot.p(slot_context, slot_changes);
     }
-}
-function get_all_dirty_from_scope($$scope) {
-    if ($$scope.ctx.length > 32) {
-        const dirty = [];
-        const length = $$scope.ctx.length / 32;
-        for (let i = 0; i < length; i++) {
-            dirty[i] = -1;
-        }
-        return dirty;
-    }
-    return -1;
 }
 function exclude_internal_props(props) {
     const result = {};
@@ -114,6 +96,7 @@ function exclude_internal_props(props) {
             result[k] = props[k];
     return result;
 }
+
 function append(target, node) {
     target.appendChild(node);
 }
@@ -171,7 +154,6 @@ function select_option(select, value) {
             return;
         }
     }
-    select.selectedIndex = -1; // no option should be selected
 }
 function select_value(select) {
     const selected_option = select.querySelector(':checked') || select.options[0];
@@ -180,9 +162,9 @@ function select_value(select) {
 function toggle_class(element, name, toggle) {
     element.classList[toggle ? 'add' : 'remove'](name);
 }
-function custom_event(type, detail, bubbles = false) {
+function custom_event(type, detail) {
     const e = document.createEvent('CustomEvent');
-    e.initCustomEvent(type, bubbles, false, detail);
+    e.initCustomEvent(type, false, false, detail);
     return e;
 }
 
@@ -393,17 +375,6 @@ function handle_promise(promise, info) {
         info.resolved = promise;
     }
 }
-function update_await_block_branch(info, ctx, dirty) {
-    const child_ctx = ctx.slice();
-    const { resolved } = info;
-    if (info.current === info.then) {
-        child_ctx[info.value] = resolved;
-    }
-    if (info.current === info.catch) {
-        child_ctx[info.error] = resolved;
-    }
-    info.block.p(child_ctx, dirty);
-}
 
 const globals = (typeof window !== 'undefined'
     ? window
@@ -460,7 +431,7 @@ function make_dirty(component, i) {
     }
     component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
 }
-function init(component, options, instance, create_fragment, not_equal, props, append_styles, dirty = [-1]) {
+function init(component, options, instance, create_fragment, not_equal, props, dirty = [-1]) {
     const parent_component = current_component;
     set_current_component(component);
     const $$ = component.$$ = {
@@ -477,14 +448,12 @@ function init(component, options, instance, create_fragment, not_equal, props, a
         on_disconnect: [],
         before_update: [],
         after_update: [],
-        context: new Map(options.context || (parent_component ? parent_component.$$.context : [])),
+        context: new Map(parent_component ? parent_component.$$.context : []),
         // everything else
         callbacks: blank_object(),
         dirty,
-        skip_bound: false,
-        root: options.target || parent_component.$$.root
+        skip_bound: false
     };
-    append_styles && append_styles($$.root);
     let ready = false;
     $$.ctx = instance
         ? instance(component, options.props || {}, (i, ret, ...rest) => {
@@ -548,7 +517,7 @@ class SvelteComponent {
 }
 
 function dispatch_dev(type, detail) {
-    document.dispatchEvent(custom_event(type, Object.assign({ version: '3.44.1' }, detail), true));
+    document.dispatchEvent(custom_event(type, Object.assign({ version: '3.35.0' }, detail)));
 }
 function append_dev(target, node) {
     dispatch_dev('SvelteDOMInsert', { target, node });
@@ -637,15 +606,16 @@ const subscriber_queue = [];
  */
 function writable(value, start = noop) {
     let stop;
-    const subscribers = new Set();
+    const subscribers = [];
     function set(new_value) {
         if (safe_not_equal(value, new_value)) {
             value = new_value;
             if (stop) { // store is ready
                 const run_queue = !subscriber_queue.length;
-                for (const subscriber of subscribers) {
-                    subscriber[1]();
-                    subscriber_queue.push(subscriber, value);
+                for (let i = 0; i < subscribers.length; i += 1) {
+                    const s = subscribers[i];
+                    s[1]();
+                    subscriber_queue.push(s, value);
                 }
                 if (run_queue) {
                     for (let i = 0; i < subscriber_queue.length; i += 2) {
@@ -661,14 +631,17 @@ function writable(value, start = noop) {
     }
     function subscribe(run, invalidate = noop) {
         const subscriber = [run, invalidate];
-        subscribers.add(subscriber);
-        if (subscribers.size === 1) {
+        subscribers.push(subscriber);
+        if (subscribers.length === 1) {
             stop = start(set) || noop;
         }
         run(value);
         return () => {
-            subscribers.delete(subscriber);
-            if (subscribers.size === 0) {
+            const index = subscribers.indexOf(subscriber);
+            if (index !== -1) {
+                subscribers.splice(index, 1);
+            }
+            if (subscribers.length === 0) {
                 stop();
                 stop = null;
             }
@@ -821,7 +794,7 @@ class API {
   }
 }
 
-/* src/Logo.svelte generated by Svelte v3.44.1 */
+/* src/Logo.svelte generated by Svelte v3.35.0 */
 
 const file$a = "src/Logo.svelte";
 
@@ -863,19 +836,19 @@ function create_fragment$b(ctx) {
 			add_location(path4, file$a, 10, 8, 1283);
 			attr_dev(path5, "d", "M99.2 9.04a6.16 6.16 0 00-2.33-2.62 6.94 6.94 0 00-3.65-.96 6.68 6.68 0 00-3.58.93A6.26 6.26 0 0087.27 9a8.63 8.63 0 00-.83 3.9 8.58 8.58 0 00.83 3.84 6.4 6.4 0 002.34 2.62 7.37 7.37 0 007.22.03 6.16 6.16 0 002.34-2.61 8.63 8.63 0 00.83-3.89 8.05 8.05 0 00-.8-3.85zm-2.71 7.6a3.77 3.77 0 01-3.24 1.44 3.86 3.86 0 01-3.23-1.44 6.21 6.21 0 01-1.1-3.82 7.37 7.37 0 01.48-2.72 3.8 3.8 0 011.41-1.82 4.06 4.06 0 012.41-.66 3.84 3.84 0 013.23 1.41 6.1 6.1 0 011.07 3.79 5.92 5.92 0 01-1.03 3.82z");
 			add_location(path5, file$a, 11, 8, 1567);
-			attr_dev(path6, "class", "logoIcon svelte-fa509d");
+			attr_dev(path6, "class", "logoIcon svelte-bfa57z");
 			attr_dev(path6, "d", "M81.31 19.77h1.7a.3.3 0 00.3-.31v-1.68a.3.3 0 00-.3-.31h-1.7a.3.3 0 00-.3.3v1.7a.3.3 0 00.3.3z");
 			add_location(path6, file$a, 12, 8, 2077);
-			attr_dev(path7, "class", "logoIcon svelte-fa509d");
+			attr_dev(path7, "class", "logoIcon svelte-bfa57z");
 			attr_dev(path7, "d", "M13.18 25.78a13.48 13.48 0 01-6.75-1.82l-.68-.4v-3.4H2.27l-.41-.67A12.76 12.76 0 010 12.9 13.06 13.06 0 0113.18 0a13.06 13.06 0 0113.18 12.9 13.06 13.06 0 01-13.18 12.88zm-4.61-3.8a10.27 10.27 0 004.6 1.04A10.26 10.26 0 0023.54 12.9 10.23 10.23 0 0013.18 2.8 10.26 10.26 0 002.82 12.92a10.13 10.13 0 001.07 4.51h1.86v-4.5a7.37 7.37 0 017.43-7.28 7.37 7.37 0 017.43 7.27 7.37 7.37 0 01-7.43 7.27H8.57zm4.6-13.56a4.56 4.56 0 00-4.6 4.5v4.52h4.6a4.51 4.51 0 100-9.02z");
 			add_location(path7, file$a, 13, 8, 2209);
 			attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
 			attr_dev(svg, "viewBox", "0 0 100 25.78");
-			attr_dev(svg, "class", "svelte-fa509d");
+			attr_dev(svg, "class", "svelte-bfa57z");
 			add_location(svg, file$a, 5, 6, 77);
-			attr_dev(div0, "class", "header__logo svelte-fa509d");
+			attr_dev(div0, "class", "header__logo svelte-bfa57z");
 			add_location(div0, file$a, 4, 2, 44);
-			attr_dev(div1, "class", "header svelte-fa509d");
+			attr_dev(div1, "class", "header svelte-bfa57z");
 			add_location(div1, file$a, 3, 1, 21);
 		},
 		l: function claim(nodes) {
@@ -915,11 +888,11 @@ function create_fragment$b(ctx) {
 
 function instance$b($$self, $$props) {
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('Logo', slots, []);
+	validate_slots("Logo", slots, []);
 	const writable_props = [];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Logo> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Logo> was created with unknown prop '${key}'`);
 	});
 
 	return [];
@@ -948,7 +921,7 @@ const changed = writable(1);
 const maxFiles = writable(0);
 const additionalResponseFields = writable([]);
 
-/* src/SearchField.svelte generated by Svelte v3.44.1 */
+/* src/SearchField.svelte generated by Svelte v3.35.0 */
 const file$9 = "src/SearchField.svelte";
 
 function create_fragment$a(ctx) {
@@ -971,14 +944,14 @@ function create_fragment$a(ctx) {
 			attr_dev(input_1, "id", "pixxio-search");
 			attr_dev(input_1, "type", "text");
 			attr_dev(input_1, "placeholder", " ");
-			attr_dev(input_1, "class", "svelte-gmuv5t");
+			attr_dev(input_1, "class", "svelte-1j2aap9");
 			add_location(input_1, file$9, 18, 4, 341);
 			attr_dev(label, "for", "pixxio-search");
-			attr_dev(label, "class", "svelte-gmuv5t");
+			attr_dev(label, "class", "svelte-1j2aap9");
 			add_location(label, file$9, 19, 4, 438);
-			attr_dev(div0, "class", "field svelte-gmuv5t");
+			attr_dev(div0, "class", "field svelte-1j2aap9");
 			add_location(div0, file$9, 17, 2, 317);
-			attr_dev(div1, "class", "searchField fields svelte-gmuv5t");
+			attr_dev(div1, "class", "searchField fields svelte-1j2aap9");
 			add_location(div1, file$9, 16, 0, 282);
 		},
 		l: function claim(nodes) {
@@ -1028,8 +1001,8 @@ function create_fragment$a(ctx) {
 
 function instance$a($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('SearchField', slots, []);
-	let { value = '' } = $$props;
+	validate_slots("SearchField", slots, []);
+	let { value = "" } = $$props;
 	let timeout = null;
 
 	const input = () => {
@@ -1045,10 +1018,10 @@ function instance$a($$self, $$props, $$invalidate) {
 		);
 	};
 
-	const writable_props = ['value'];
+	const writable_props = ["value"];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<SearchField> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<SearchField> was created with unknown prop '${key}'`);
 	});
 
 	function input_1_input_handler() {
@@ -1057,14 +1030,14 @@ function instance$a($$self, $$props, $$invalidate) {
 	}
 
 	$$self.$$set = $$props => {
-		if ('value' in $$props) $$invalidate(0, value = $$props.value);
+		if ("value" in $$props) $$invalidate(0, value = $$props.value);
 	};
 
 	$$self.$capture_state = () => ({ searchTerm, value, timeout, input });
 
 	$$self.$inject_state = $$props => {
-		if ('value' in $$props) $$invalidate(0, value = $$props.value);
-		if ('timeout' in $$props) timeout = $$props.timeout;
+		if ("value" in $$props) $$invalidate(0, value = $$props.value);
+		if ("timeout" in $$props) timeout = $$props.timeout;
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -1142,7 +1115,7 @@ function lang(key) {
   return lines[lang || 'en'][key];
 }
 
-/* src/Loading.svelte generated by Svelte v3.44.1 */
+/* src/Loading.svelte generated by Svelte v3.35.0 */
 const file$8 = "src/Loading.svelte";
 
 function create_fragment$9(ctx) {
@@ -1161,17 +1134,17 @@ function create_fragment$9(ctx) {
 			attr_dev(path, "stroke-width", "5");
 			attr_dev(path, "d", "M24.76 50.76v-13c0-7.17 5.94-13 13.25-13s13.25 5.83 13.25 13c0 7.18-5.94 13-13.25 13H26.27l-11.17.38s-3.34-8.2-3.34-12.88a26.51 26.51 0 0126.5-26.5 26.51 26.51 0 0126.5 26.5 26.51 26.51 0 01-26.5 26.5c-4.85 0-9.58-1.3-13.5-3.6z");
 			attr_dev(path, "fill", "none");
-			attr_dev(path, "class", "svelte-2yi7ym");
+			attr_dev(path, "class", "svelte-fhr97u");
 			add_location(path, file$8, 6, 86, 183);
 			attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
 			attr_dev(svg, "id", "pixxioIcon");
 			attr_dev(svg, "viewBox", "0 0 76.52 76.52");
-			attr_dev(svg, "class", "svelte-2yi7ym");
+			attr_dev(svg, "class", "svelte-fhr97u");
 			add_location(svg, file$8, 6, 4, 101);
-			attr_dev(div0, "class", "svelte-2yi7ym");
+			attr_dev(div0, "class", "svelte-fhr97u");
 			add_location(div0, file$8, 5, 2, 91);
 			attr_dev(div1, "id", "pixxio-ta-loading");
-			attr_dev(div1, "class", "svelte-2yi7ym");
+			attr_dev(div1, "class", "svelte-fhr97u");
 			add_location(div1, file$8, 4, 0, 60);
 		},
 		l: function claim(nodes) {
@@ -1204,11 +1177,11 @@ function create_fragment$9(ctx) {
 
 function instance$9($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('Loading', slots, []);
+	validate_slots("Loading", slots, []);
 	const writable_props = [];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Loading> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Loading> was created with unknown prop '${key}'`);
 	});
 
 	$$self.$capture_state = () => ({ lang });
@@ -1229,7 +1202,7 @@ class Loading extends SvelteComponentDev {
 	}
 }
 
-/* src/Login.svelte generated by Svelte v3.44.1 */
+/* src/Login.svelte generated by Svelte v3.35.0 */
 
 const { Error: Error_1$4 } = globals;
 const file$7 = "src/Login.svelte";
@@ -1249,17 +1222,17 @@ function create_if_block_2$3(ctx) {
 			input = element("input");
 			t0 = space();
 			label = element("label");
-			label.textContent = `${lang('mediaspace')}`;
+			label.textContent = `${lang("mediaspace")}`;
 			attr_dev(input, "id", "pixxio-mediaspace");
 			input.disabled = /*isLoading*/ ctx[3];
 			attr_dev(input, "type", "text");
 			attr_dev(input, "placeholder", " ");
-			attr_dev(input, "class", "svelte-8imtwf");
+			attr_dev(input, "class", "svelte-1tlmu99");
 			add_location(input, file$7, 85, 4, 2158);
 			attr_dev(label, "for", "pixxio-mediaspace");
-			attr_dev(label, "class", "svelte-8imtwf");
+			attr_dev(label, "class", "svelte-1tlmu99");
 			add_location(label, file$7, 86, 4, 2270);
-			attr_dev(div, "class", "field svelte-8imtwf");
+			attr_dev(div, "class", "field svelte-1tlmu99");
 			add_location(div, file$7, 84, 2, 2134);
 		},
 		m: function mount(target, anchor) {
@@ -1308,8 +1281,8 @@ function create_if_block_1$4(ctx) {
 	const block = {
 		c: function create() {
 			small = element("small");
-			small.textContent = `${lang('signin_error')}`;
-			attr_dev(small, "class", "error svelte-8imtwf");
+			small.textContent = `${lang("signin_error")}`;
+			attr_dev(small, "class", "error svelte-1tlmu99");
 			add_location(small, file$7, 98, 2, 2768);
 		},
 		m: function mount(target, anchor) {
@@ -1393,7 +1366,7 @@ function create_fragment$8(ctx) {
 	let button0;
 	let t13;
 	let button1;
-	let t14_value = lang('signin') + "";
+	let t14_value = lang("signin") + "";
 	let t14;
 	let t15;
 	let current;
@@ -1407,10 +1380,10 @@ function create_fragment$8(ctx) {
 		c: function create() {
 			div3 = element("div");
 			h2 = element("h2");
-			h2.textContent = `${lang('signin')}`;
+			h2.textContent = `${lang("signin")}`;
 			t1 = space();
 			p = element("p");
-			p.textContent = `${lang('signin_description')}`;
+			p.textContent = `${lang("signin_description")}`;
 			t3 = space();
 			if (if_block0) if_block0.c();
 			t4 = space();
@@ -1418,59 +1391,59 @@ function create_fragment$8(ctx) {
 			input0 = element("input");
 			t5 = space();
 			label0 = element("label");
-			label0.textContent = `${lang('username')}`;
+			label0.textContent = `${lang("username")}`;
 			t7 = space();
 			div1 = element("div");
 			input1 = element("input");
 			t8 = space();
 			label1 = element("label");
-			label1.textContent = `${lang('password')}`;
+			label1.textContent = `${lang("password")}`;
 			t10 = space();
 			if (if_block1) if_block1.c();
 			t11 = space();
 			div2 = element("div");
 			button0 = element("button");
-			button0.textContent = `${lang('cancel')}`;
+			button0.textContent = `${lang("cancel")}`;
 			t13 = space();
 			button1 = element("button");
 			t14 = text(t14_value);
 			t15 = space();
 			if (if_block2) if_block2.c();
-			attr_dev(h2, "class", "svelte-8imtwf");
+			attr_dev(h2, "class", "svelte-1tlmu99");
 			add_location(h2, file$7, 81, 2, 2051);
-			attr_dev(p, "class", "svelte-8imtwf");
+			attr_dev(p, "class", "svelte-1tlmu99");
 			add_location(p, file$7, 82, 2, 2079);
 			attr_dev(input0, "id", "pixxio-username");
 			input0.disabled = /*isLoading*/ ctx[3];
 			attr_dev(input0, "type", "text");
 			attr_dev(input0, "placeholder", " ");
-			attr_dev(input0, "class", "svelte-8imtwf");
+			attr_dev(input0, "class", "svelte-1tlmu99");
 			add_location(input0, file$7, 90, 4, 2373);
 			attr_dev(label0, "for", "pixxio-username");
-			attr_dev(label0, "class", "svelte-8imtwf");
+			attr_dev(label0, "class", "svelte-1tlmu99");
 			add_location(label0, file$7, 91, 4, 2481);
-			attr_dev(div0, "class", "field svelte-8imtwf");
+			attr_dev(div0, "class", "field svelte-1tlmu99");
 			add_location(div0, file$7, 89, 2, 2349);
 			attr_dev(input1, "id", "pixxio-password");
 			input1.disabled = /*isLoading*/ ctx[3];
 			attr_dev(input1, "type", "password");
 			attr_dev(input1, "placeholder", " ");
-			attr_dev(input1, "class", "svelte-8imtwf");
+			attr_dev(input1, "class", "svelte-1tlmu99");
 			add_location(input1, file$7, 94, 4, 2572);
 			attr_dev(label1, "for", "pixxio-password");
-			attr_dev(label1, "class", "svelte-8imtwf");
+			attr_dev(label1, "class", "svelte-1tlmu99");
 			add_location(label1, file$7, 95, 4, 2684);
-			attr_dev(div1, "class", "field svelte-8imtwf");
+			attr_dev(div1, "class", "field svelte-1tlmu99");
 			add_location(div1, file$7, 93, 2, 2548);
-			attr_dev(button0, "class", "button button--secondary svelte-8imtwf");
+			attr_dev(button0, "class", "button button--secondary svelte-1tlmu99");
 			add_location(button0, file$7, 101, 4, 2860);
-			attr_dev(button1, "class", "button svelte-8imtwf");
+			attr_dev(button1, "class", "button svelte-1tlmu99");
 			attr_dev(button1, "type", "submit");
 			button1.disabled = /*isLoading*/ ctx[3];
 			add_location(button1, file$7, 102, 4, 2949);
-			attr_dev(div2, "class", "buttonGroup svelte-8imtwf");
+			attr_dev(div2, "class", "buttonGroup svelte-1tlmu99");
 			add_location(div2, file$7, 100, 2, 2830);
-			attr_dev(div3, "class", "login fields svelte-8imtwf");
+			attr_dev(div3, "class", "login fields svelte-1tlmu99");
 			toggle_class(div3, "no-modal", !/*$modal*/ ctx[6]);
 			add_location(div3, file$7, 80, 0, 1995);
 		},
@@ -1622,31 +1595,31 @@ function create_fragment$8(ctx) {
 }
 
 function instance$8($$self, $$props, $$invalidate) {
-	let $appKey;
 	let $domain;
+	let $appKey;
 	let $modal;
-	validate_store(appKey, 'appKey');
-	component_subscribe($$self, appKey, $$value => $$invalidate(12, $appKey = $$value));
-	validate_store(domain, 'domain');
+	validate_store(domain, "domain");
 	component_subscribe($$self, domain, $$value => $$invalidate(5, $domain = $$value));
-	validate_store(modal, 'modal');
+	validate_store(appKey, "appKey");
+	component_subscribe($$self, appKey, $$value => $$invalidate(12, $appKey = $$value));
+	validate_store(modal, "modal");
 	component_subscribe($$self, modal, $$value => $$invalidate(6, $modal = $$value));
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('Login', slots, []);
+	validate_slots("Login", slots, []);
 	const dispatch = createEventDispatcher();
 	const api = new API();
-	let username = '';
-	let password = '';
+	let username = "";
+	let password = "";
 	let hasError = false;
 	let isLoading = false;
-	let mediaspace = '';
+	let mediaspace = "";
 
 	/**
  * check if there is a refreshToken in storage
  */
-	const token = sessionStorage.getItem('refreshToken');
+	const token = sessionStorage.getItem("refreshToken");
 
-	mediaspace = sessionStorage.getItem('domain');
+	mediaspace = sessionStorage.getItem("domain");
 
 	if (mediaspace) {
 		domain.update(() => mediaspace);
@@ -1658,9 +1631,9 @@ function instance$8($$self, $$props, $$invalidate) {
 
 		api.callAccessToken().then(() => {
 			$$invalidate(3, isLoading = false);
-			dispatch('authenticated');
+			dispatch("authenticated");
 		}).catch(e => {
-			refreshToken.update(() => '');
+			refreshToken.update(() => "");
 			$$invalidate(3, isLoading = false);
 		});
 	}
@@ -1671,10 +1644,10 @@ function instance$8($$self, $$props, $$invalidate) {
 
 		try {
 			const formData = new FormData();
-			formData.set('applicationKey', $appKey);
-			formData.set('userNameOrEmail', username);
-			formData.set('password', password);
-			const data = await fetch(`https://${mediaspace}/gobackend/login`, { method: 'POST', body: formData });
+			formData.set("applicationKey", $appKey);
+			formData.set("userNameOrEmail", username);
+			formData.set("password", password);
+			const data = await fetch(`https://${mediaspace}/gobackend/login`, { method: "POST", body: formData });
 			const response = await data.json();
 			$$invalidate(3, isLoading = false);
 
@@ -1687,11 +1660,11 @@ function instance$8($$self, $$props, $$invalidate) {
 			refreshToken.update(() => response.refreshToken);
 
 			domain.update(() => mediaspace);
-			sessionStorage.setItem('domain', mediaspace);
-			sessionStorage.setItem('refreshToken', response.refreshToken);
+			sessionStorage.setItem("domain", mediaspace);
+			sessionStorage.setItem("refreshToken", response.refreshToken);
 
 			api.callAccessToken().then(() => {
-				dispatch('authenticated');
+				dispatch("authenticated");
 			});
 		} catch(error) {
 			$$invalidate(3, isLoading = false);
@@ -1700,13 +1673,13 @@ function instance$8($$self, $$props, $$invalidate) {
 	};
 
 	const cancel = () => {
-		dispatch('cancel');
+		dispatch("cancel");
 	};
 
 	const writable_props = [];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Login> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Login> was created with unknown prop '${key}'`);
 	});
 
 	function input_input_handler() {
@@ -1743,17 +1716,17 @@ function instance$8($$self, $$props, $$invalidate) {
 		token,
 		login,
 		cancel,
-		$appKey,
 		$domain,
+		$appKey,
 		$modal
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('username' in $$props) $$invalidate(0, username = $$props.username);
-		if ('password' in $$props) $$invalidate(1, password = $$props.password);
-		if ('hasError' in $$props) $$invalidate(2, hasError = $$props.hasError);
-		if ('isLoading' in $$props) $$invalidate(3, isLoading = $$props.isLoading);
-		if ('mediaspace' in $$props) $$invalidate(4, mediaspace = $$props.mediaspace);
+		if ("username" in $$props) $$invalidate(0, username = $$props.username);
+		if ("password" in $$props) $$invalidate(1, password = $$props.password);
+		if ("hasError" in $$props) $$invalidate(2, hasError = $$props.hasError);
+		if ("isLoading" in $$props) $$invalidate(3, isLoading = $$props.isLoading);
+		if ("mediaspace" in $$props) $$invalidate(4, mediaspace = $$props.mediaspace);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -1790,7 +1763,7 @@ class Login extends SvelteComponentDev {
 	}
 }
 
-/* src/DownloadFormats.svelte generated by Svelte v3.44.1 */
+/* src/DownloadFormats.svelte generated by Svelte v3.35.0 */
 
 const { Error: Error_1$3 } = globals;
 const file$6 = "src/DownloadFormats.svelte";
@@ -1838,19 +1811,19 @@ function create_if_block$5(ctx) {
 
 			t0 = space();
 			label = element("label");
-			label.textContent = `${lang('please_select')}`;
+			label.textContent = `${lang("please_select")}`;
 			attr_dev(select_1, "name", "");
 			attr_dev(select_1, "id", "pixxioDownloadFormats__dropdown");
 			attr_dev(select_1, "placeholder", " ");
-			attr_dev(select_1, "class", "svelte-1who27a");
+			attr_dev(select_1, "class", "svelte-plp1y2");
 			if (/*selected*/ ctx[0] === void 0) add_render_callback(() => /*select_1_change_handler*/ ctx[7].call(select_1));
 			add_location(select_1, file$6, 73, 4, 1934);
 			attr_dev(label, "for", "pixxioDownloadFormats__dropdown");
-			attr_dev(label, "class", "svelte-1who27a");
+			attr_dev(label, "class", "svelte-plp1y2");
 			add_location(label, file$6, 84, 4, 2351);
-			attr_dev(div0, "class", "field svelte-1who27a");
+			attr_dev(div0, "class", "field svelte-plp1y2");
 			add_location(div0, file$6, 72, 2, 1910);
-			attr_dev(div1, "class", "downloadFormats fields svelte-1who27a");
+			attr_dev(div1, "class", "downloadFormats fields svelte-plp1y2");
 			add_location(div1, file$6, 71, 0, 1871);
 		},
 		m: function mount(target, anchor) {
@@ -1939,7 +1912,7 @@ function create_if_block_2$2(ctx) {
 	const block = {
 		c: function create() {
 			option = element("option");
-			option.textContent = `${lang('preview')}`;
+			option.textContent = `${lang("preview")}`;
 			option.__value = "preview";
 			option.value = option.__value;
 			add_location(option, file$6, 75, 6, 2073);
@@ -1971,7 +1944,7 @@ function create_if_block_1$3(ctx) {
 	const block = {
 		c: function create() {
 			option = element("option");
-			option.textContent = `${lang('original')}`;
+			option.textContent = `${lang("original")}`;
 			option.__value = "original";
 			option.value = option.__value;
 			add_location(option, file$6, 78, 6, 2167);
@@ -2091,18 +2064,18 @@ function create_fragment$7(ctx) {
 function instance$7($$self, $$props, $$invalidate) {
 	let hideDropdown;
 	let $allowFormats;
-	validate_store(allowFormats, 'allowFormats');
+	validate_store(allowFormats, "allowFormats");
 	component_subscribe($$self, allowFormats, $$value => $$invalidate(6, $allowFormats = $$value));
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('DownloadFormats', slots, []);
+	validate_slots("DownloadFormats", slots, []);
 	const dispatch = createEventDispatcher();
 	const api = new API();
 	let selected;
 	let formats = [];
 	let hasError = false;
 	let isLoading = false;
-	let showOriginal = $allowFormats === null || $allowFormats !== null && $allowFormats.includes('original');
-	let showPreview = $allowFormats === null || $allowFormats !== null && $allowFormats.includes('preview');
+	let showOriginal = $allowFormats === null || $allowFormats !== null && $allowFormats.includes("original");
+	let showPreview = $allowFormats === null || $allowFormats !== null && $allowFormats.includes("preview");
 
 	onMount(() => {
 		if ($allowFormats && $allowFormats.length === 1) {
@@ -2151,7 +2124,7 @@ function instance$7($$self, $$props, $$invalidate) {
 	const writable_props = [];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<DownloadFormats> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<DownloadFormats> was created with unknown prop '${key}'`);
 	});
 
 	function select_1_change_handler() {
@@ -2180,18 +2153,18 @@ function instance$7($$self, $$props, $$invalidate) {
 		changes,
 		select,
 		fetchDownloadFormats,
-		hideDropdown,
-		$allowFormats
+		$allowFormats,
+		hideDropdown
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('selected' in $$props) $$invalidate(0, selected = $$props.selected);
-		if ('formats' in $$props) $$invalidate(1, formats = $$props.formats);
-		if ('hasError' in $$props) hasError = $$props.hasError;
-		if ('isLoading' in $$props) isLoading = $$props.isLoading;
-		if ('showOriginal' in $$props) $$invalidate(3, showOriginal = $$props.showOriginal);
-		if ('showPreview' in $$props) $$invalidate(4, showPreview = $$props.showPreview);
-		if ('hideDropdown' in $$props) $$invalidate(2, hideDropdown = $$props.hideDropdown);
+		if ("selected" in $$props) $$invalidate(0, selected = $$props.selected);
+		if ("formats" in $$props) $$invalidate(1, formats = $$props.formats);
+		if ("hasError" in $$props) hasError = $$props.hasError;
+		if ("isLoading" in $$props) isLoading = $$props.isLoading;
+		if ("showOriginal" in $$props) $$invalidate(3, showOriginal = $$props.showOriginal);
+		if ("showPreview" in $$props) $$invalidate(4, showPreview = $$props.showPreview);
+		if ("hideDropdown" in $$props) $$invalidate(2, hideDropdown = $$props.hideDropdown);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -2234,7 +2207,7 @@ class DownloadFormats extends SvelteComponentDev {
 	}
 }
 
-/* src/Selection.svelte generated by Svelte v3.44.1 */
+/* src/Selection.svelte generated by Svelte v3.35.0 */
 const file$5 = "src/Selection.svelte";
 
 function get_each_context$1(ctx, list, i) {
@@ -2327,11 +2300,11 @@ function create_each_block$1(ctx) {
 			img = element("img");
 			t = space();
 			attr_dev(img, "loading", "lazy");
-			if (!src_url_equal(img.src, img_src_value = /*file*/ ctx[3].imagePath || /*file*/ ctx[3].modifiedPreviewFileURLs[0])) attr_dev(img, "src", img_src_value);
+			if (img.src !== (img_src_value = /*file*/ ctx[3].imagePath || /*file*/ ctx[3].modifiedPreviewFileURLs[0])) attr_dev(img, "src", img_src_value);
 			attr_dev(img, "alt", img_alt_value = /*file*/ ctx[3].fileName);
-			attr_dev(img, "class", "svelte-2dn8sz");
+			attr_dev(img, "class", "svelte-1y7flg5");
 			add_location(img, file$5, 14, 8, 383);
-			attr_dev(li, "class", "pixxioSelection__file svelte-2dn8sz");
+			attr_dev(li, "class", "pixxioSelection__file svelte-1y7flg5");
 			add_location(li, file$5, 13, 6, 302);
 		},
 		m: function mount(target, anchor) {
@@ -2344,7 +2317,7 @@ function create_each_block$1(ctx) {
 					li,
 					"click",
 					function () {
-						if (is_function(/*dispatch*/ ctx[2]('deselect', /*file*/ ctx[3]))) /*dispatch*/ ctx[2]('deselect', /*file*/ ctx[3]).apply(this, arguments);
+						if (is_function(/*dispatch*/ ctx[2]("deselect", /*file*/ ctx[3]))) /*dispatch*/ ctx[2]("deselect", /*file*/ ctx[3]).apply(this, arguments);
 					},
 					false,
 					false,
@@ -2357,7 +2330,7 @@ function create_each_block$1(ctx) {
 		p: function update(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*selected*/ 2 && !src_url_equal(img.src, img_src_value = /*file*/ ctx[3].imagePath || /*file*/ ctx[3].modifiedPreviewFileURLs[0])) {
+			if (dirty & /*selected*/ 2 && img.src !== (img_src_value = /*file*/ ctx[3].imagePath || /*file*/ ctx[3].modifiedPreviewFileURLs[0])) {
 				attr_dev(img, "src", img_src_value);
 			}
 
@@ -2395,7 +2368,7 @@ function create_if_block$4(ctx) {
 			li = element("li");
 			t0 = text("+ ");
 			t1 = text(t1_value);
-			attr_dev(li, "class", "svelte-2dn8sz");
+			attr_dev(li, "class", "svelte-1y7flg5");
 			add_location(li, file$5, 19, 2, 547);
 		},
 		m: function mount(target, anchor) {
@@ -2434,7 +2407,7 @@ function create_fragment$6(ctx) {
 			if (if_block0) if_block0.c();
 			t = space();
 			if (if_block1) if_block1.c();
-			attr_dev(ul, "class", "svelte-2dn8sz");
+			attr_dev(ul, "class", "svelte-1y7flg5");
 			add_location(ul, file$5, 10, 0, 240);
 		},
 		l: function claim(nodes) {
@@ -2485,17 +2458,17 @@ function create_fragment$6(ctx) {
 function instance$6($$self, $$props, $$invalidate) {
 	let selected;
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('Selection', slots, []);
+	validate_slots("Selection", slots, []);
 	const dispatch = createEventDispatcher();
 	let { selectedFiles = [] } = $$props;
-	const writable_props = ['selectedFiles'];
+	const writable_props = ["selectedFiles"];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Selection> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Selection> was created with unknown prop '${key}'`);
 	});
 
 	$$self.$$set = $$props => {
-		if ('selectedFiles' in $$props) $$invalidate(0, selectedFiles = $$props.selectedFiles);
+		if ("selectedFiles" in $$props) $$invalidate(0, selectedFiles = $$props.selectedFiles);
 	};
 
 	$$self.$capture_state = () => ({
@@ -2507,8 +2480,8 @@ function instance$6($$self, $$props, $$invalidate) {
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('selectedFiles' in $$props) $$invalidate(0, selectedFiles = $$props.selectedFiles);
-		if ('selected' in $$props) $$invalidate(1, selected = $$props.selected);
+		if ("selectedFiles" in $$props) $$invalidate(0, selectedFiles = $$props.selectedFiles);
+		if ("selected" in $$props) $$invalidate(1, selected = $$props.selected);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -2546,7 +2519,7 @@ class Selection extends SvelteComponentDev {
 	}
 }
 
-/* src/FileItem.svelte generated by Svelte v3.44.1 */
+/* src/FileItem.svelte generated by Svelte v3.35.0 */
 const file_1 = "src/FileItem.svelte";
 
 // (14:0) {#if file}
@@ -2574,18 +2547,18 @@ function create_if_block$3(ctx) {
 			figcaption = element("figcaption");
 			t1 = text(t1_value);
 			attr_dev(img, "loading", "lazy");
-			if (!src_url_equal(img.src, img_src_value = /*file*/ ctx[0].imagePath || /*file*/ ctx[0].modifiedPreviewFileURLs[0])) attr_dev(img, "src", img_src_value);
+			if (img.src !== (img_src_value = /*file*/ ctx[0].imagePath || /*file*/ ctx[0].modifiedPreviewFileURLs[0])) attr_dev(img, "src", img_src_value);
 			attr_dev(img, "alt", img_alt_value = /*file*/ ctx[0].fileName);
-			attr_dev(img, "class", "svelte-e9o60a");
+			attr_dev(img, "class", "svelte-ntzrpk");
 			add_location(img, file_1, 17, 6, 391);
-			attr_dev(div, "class", "pixxioSquare svelte-e9o60a");
+			attr_dev(div, "class", "pixxioSquare svelte-ntzrpk");
 			toggle_class(div, "pixxioSquare--active", /*file*/ ctx[0].selected);
 			add_location(div, file_1, 16, 4, 315);
-			attr_dev(figcaption, "class", "svelte-e9o60a");
+			attr_dev(figcaption, "class", "svelte-ntzrpk");
 			add_location(figcaption, file_1, 19, 4, 503);
-			attr_dev(figure, "class", "svelte-e9o60a");
+			attr_dev(figure, "class", "svelte-ntzrpk");
 			add_location(figure, file_1, 15, 2, 302);
-			attr_dev(li, "class", "svelte-e9o60a");
+			attr_dev(li, "class", "svelte-ntzrpk");
 			add_location(li, file_1, 14, 0, 269);
 		},
 		m: function mount(target, anchor) {
@@ -2603,7 +2576,7 @@ function create_if_block$3(ctx) {
 			}
 		},
 		p: function update(ctx, dirty) {
-			if (dirty & /*file*/ 1 && !src_url_equal(img.src, img_src_value = /*file*/ ctx[0].imagePath || /*file*/ ctx[0].modifiedPreviewFileURLs[0])) {
+			if (dirty & /*file*/ 1 && img.src !== (img_src_value = /*file*/ ctx[0].imagePath || /*file*/ ctx[0].modifiedPreviewFileURLs[0])) {
 				attr_dev(img, "src", img_src_value);
 			}
 
@@ -2686,26 +2659,26 @@ function create_fragment$5(ctx) {
 
 function instance$5($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('FileItem', slots, []);
+	validate_slots("FileItem", slots, []);
 	let { file = null } = $$props;
 	let { selected = false } = $$props;
 	const dispatch = createEventDispatcher();
 
 	const select = () => {
-		dispatch(!selected ? 'select' : 'deselect', file);
+		dispatch(!selected ? "select" : "deselect", file);
 	};
 
-	const writable_props = ['file', 'selected'];
+	const writable_props = ["file", "selected"];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<FileItem> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<FileItem> was created with unknown prop '${key}'`);
 	});
 
 	const click_handler = () => select();
 
 	$$self.$$set = $$props => {
-		if ('file' in $$props) $$invalidate(0, file = $$props.file);
-		if ('selected' in $$props) $$invalidate(2, selected = $$props.selected);
+		if ("file" in $$props) $$invalidate(0, file = $$props.file);
+		if ("selected" in $$props) $$invalidate(2, selected = $$props.selected);
 	};
 
 	$$self.$capture_state = () => ({
@@ -2717,8 +2690,8 @@ function instance$5($$self, $$props, $$invalidate) {
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('file' in $$props) $$invalidate(0, file = $$props.file);
-		if ('selected' in $$props) $$invalidate(2, selected = $$props.selected);
+		if ("file" in $$props) $$invalidate(0, file = $$props.file);
+		if ("selected" in $$props) $$invalidate(2, selected = $$props.selected);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -2758,7 +2731,7 @@ class FileItem extends SvelteComponentDev {
 	}
 }
 
-/* src/Error.svelte generated by Svelte v3.44.1 */
+/* src/Error.svelte generated by Svelte v3.35.0 */
 
 const { Error: Error_1$2 } = globals;
 const file$4 = "src/Error.svelte";
@@ -2773,7 +2746,7 @@ function create_fragment$4(ctx) {
 		c: function create() {
 			div = element("div");
 			if (default_slot) default_slot.c();
-			attr_dev(div, "class", "svelte-huoznz");
+			attr_dev(div, "class", "svelte-18x7sgz");
 			toggle_class(div, "success", /*$$props*/ ctx[0].success);
 			add_location(div, file$4, 0, 0, 0);
 		},
@@ -2791,17 +2764,8 @@ function create_fragment$4(ctx) {
 		},
 		p: function update(ctx, [dirty]) {
 			if (default_slot) {
-				if (default_slot.p && (!current || dirty & /*$$scope*/ 2)) {
-					update_slot_base(
-						default_slot,
-						default_slot_template,
-						ctx,
-						/*$$scope*/ ctx[1],
-						!current
-						? get_all_dirty_from_scope(/*$$scope*/ ctx[1])
-						: get_slot_changes(default_slot_template, /*$$scope*/ ctx[1], dirty, null),
-						null
-					);
+				if (default_slot.p && dirty & /*$$scope*/ 2) {
+					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[1], dirty, null, null);
 				}
 			}
 
@@ -2837,11 +2801,11 @@ function create_fragment$4(ctx) {
 
 function instance$4($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('Error', slots, ['default']);
+	validate_slots("Error", slots, ['default']);
 
 	$$self.$$set = $$new_props => {
 		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-		if ('$$scope' in $$new_props) $$invalidate(1, $$scope = $$new_props.$$scope);
+		if ("$$scope" in $$new_props) $$invalidate(1, $$scope = $$new_props.$$scope);
 	};
 
 	$$self.$inject_state = $$new_props => {
@@ -2870,7 +2834,7 @@ class Error$1 extends SvelteComponentDev {
 	}
 }
 
-/* src/Files.svelte generated by Svelte v3.44.1 */
+/* src/Files.svelte generated by Svelte v3.35.0 */
 
 const { Error: Error_1$1, console: console_1$1 } = globals;
 const file$3 = "src/Files.svelte";
@@ -2926,13 +2890,13 @@ function create_then_block(ctx) {
 	let t2;
 	let t3;
 
-	let t4_value = (/*$maxFiles*/ ctx[2] > 0
-	? '/' + /*$maxFiles*/ ctx[2]
-	: '') + "";
+	let t4_value = (/*$maxFiles*/ ctx[1] > 0
+	? "/" + /*$maxFiles*/ ctx[1]
+	: "") + "";
 
 	let t4;
 	let t5;
-	let t6_value = lang('selected') + "";
+	let t6_value = lang("selected") + "";
 	let t6;
 	let t7;
 	let t8;
@@ -2941,7 +2905,7 @@ function create_then_block(ctx) {
 	let downloadformats;
 	let t10;
 	let button;
-	let t11_value = lang('select') + "";
+	let t11_value = lang("select") + "";
 	let t11;
 	let button_disabled_value;
 	let current;
@@ -2977,7 +2941,7 @@ function create_then_block(ctx) {
 			div1 = element("div");
 			p = element("p");
 			strong = element("strong");
-			t2 = text(/*selectedCount*/ ctx[1]);
+			t2 = text(/*selectedCount*/ ctx[2]);
 			t3 = space();
 			t4 = text(t4_value);
 			t5 = space();
@@ -2991,22 +2955,22 @@ function create_then_block(ctx) {
 			t10 = space();
 			button = element("button");
 			t11 = text(t11_value);
-			attr_dev(ul, "class", "svelte-cwcv8a");
+			attr_dev(ul, "class", "svelte-wuqdzu");
 			add_location(ul, file$3, 231, 6, 5857);
-			attr_dev(section, "class", "pixxioFiles__container svelte-cwcv8a");
-			toggle_class(section, "pixxioFiles__container--maxReached", /*maxReached*/ ctx[7]);
+			attr_dev(section, "class", "pixxioFiles__container svelte-wuqdzu");
+			toggle_class(section, "pixxioFiles__container--maxReached", /*maxReached*/ ctx[6]);
 			add_location(section, file$3, 230, 4, 5733);
-			attr_dev(div0, "class", "pixxioFormats svelte-cwcv8a");
+			attr_dev(div0, "class", "pixxioFormats svelte-wuqdzu");
 			add_location(div0, file$3, 238, 4, 6063);
 			add_location(strong, file$3, 243, 9, 6168);
 			add_location(p, file$3, 243, 6, 6165);
 			set_style(span, "flex-grow", "1");
 			add_location(span, file$3, 247, 6, 6398);
-			attr_dev(button, "class", "button svelte-cwcv8a");
+			attr_dev(button, "class", "button svelte-wuqdzu");
 			attr_dev(button, "type", "submit");
-			button.disabled = button_disabled_value = !/*valid*/ ctx[6] || /*isLoading*/ ctx[5];
+			button.disabled = button_disabled_value = !/*valid*/ ctx[7] || /*isLoading*/ ctx[5];
 			add_location(button, file$3, 249, 6, 6481);
-			attr_dev(div1, "class", "buttonGroup buttonGroup--right svelte-cwcv8a");
+			attr_dev(div1, "class", "buttonGroup buttonGroup--right svelte-wuqdzu");
 			add_location(div1, file$3, 242, 4, 6114);
 		},
 		m: function mount(target, anchor) {
@@ -3077,15 +3041,15 @@ function create_then_block(ctx) {
 				check_outros();
 			}
 
-			if (dirty[0] & /*maxReached*/ 128) {
-				toggle_class(section, "pixxioFiles__container--maxReached", /*maxReached*/ ctx[7]);
+			if (dirty[0] & /*maxReached*/ 64) {
+				toggle_class(section, "pixxioFiles__container--maxReached", /*maxReached*/ ctx[6]);
 			}
 
-			if (!current || dirty[0] & /*selectedCount*/ 2) set_data_dev(t2, /*selectedCount*/ ctx[1]);
+			if (!current || dirty[0] & /*selectedCount*/ 4) set_data_dev(t2, /*selectedCount*/ ctx[2]);
 
-			if ((!current || dirty[0] & /*$maxFiles*/ 4) && t4_value !== (t4_value = (/*$maxFiles*/ ctx[2] > 0
-			? '/' + /*$maxFiles*/ ctx[2]
-			: '') + "")) set_data_dev(t4, t4_value);
+			if ((!current || dirty[0] & /*$maxFiles*/ 2) && t4_value !== (t4_value = (/*$maxFiles*/ ctx[1] > 0
+			? "/" + /*$maxFiles*/ ctx[1]
+			: "") + "")) set_data_dev(t4, t4_value);
 
 			if (/*$showSelection*/ ctx[9]) {
 				if (if_block) {
@@ -3110,7 +3074,7 @@ function create_then_block(ctx) {
 				check_outros();
 			}
 
-			if (!current || dirty[0] & /*valid, isLoading*/ 96 && button_disabled_value !== (button_disabled_value = !/*valid*/ ctx[6] || /*isLoading*/ ctx[5])) {
+			if (!current || dirty[0] & /*valid, isLoading*/ 160 && button_disabled_value !== (button_disabled_value = !/*valid*/ ctx[7] || /*isLoading*/ ctx[5])) {
 				prop_dev(button, "disabled", button_disabled_value);
 			}
 		},
@@ -3187,8 +3151,8 @@ function create_each_block(ctx) {
 	}
 
 	fileitem = new FileItem({ props: fileitem_props, $$inline: true });
-	binding_callbacks.push(() => bind(fileitem, 'file', fileitem_file_binding));
-	binding_callbacks.push(() => bind(fileitem, 'selected', fileitem_selected_binding));
+	binding_callbacks.push(() => bind(fileitem, "file", fileitem_file_binding));
+	binding_callbacks.push(() => bind(fileitem, "selected", fileitem_selected_binding));
 	fileitem.$on("select", /*select*/ ctx[11]);
 	fileitem.$on("deselect", /*deselect*/ ctx[12]);
 
@@ -3260,7 +3224,7 @@ function create_if_block$2(ctx) {
 	}
 
 	selection = new Selection({ props: selection_props, $$inline: true });
-	binding_callbacks.push(() => bind(selection, 'selectedFiles', selection_selectedFiles_binding));
+	binding_callbacks.push(() => bind(selection, "selectedFiles", selection_selectedFiles_binding));
 	selection.$on("deselect", /*deselect*/ ctx[12]);
 
 	const block = {
@@ -3369,7 +3333,7 @@ function create_fragment$3(ctx) {
 		c: function create() {
 			div = element("div");
 			info.block.c();
-			attr_dev(div, "class", "pixxioFiles svelte-cwcv8a");
+			attr_dev(div, "class", "pixxioFiles svelte-wuqdzu");
 			toggle_class(div, "no-modal", !/*$modal*/ ctx[8]);
 			add_location(div, file$3, 225, 0, 5612);
 		},
@@ -3388,7 +3352,8 @@ function create_fragment$3(ctx) {
 			info.ctx = ctx;
 
 			if (dirty[0] & /*getFiles*/ 8 && promise !== (promise = /*getFiles*/ ctx[3]) && handle_promise(promise, info)) ; else {
-				update_await_block_branch(info, ctx, dirty);
+				const child_ctx = ctx.slice();
+				info.block.p(child_ctx, dirty);
 			}
 
 			if (dirty[0] & /*$modal*/ 256) {
@@ -3433,26 +3398,26 @@ function instance$3($$self, $$props, $$invalidate) {
 	let maxReached;
 	let valid;
 	let downloadFormat;
-	let $additionalResponseFields;
-	let $allowTypes;
-	let $format;
 	let $maxFiles;
+	let $format;
+	let $allowTypes;
+	let $additionalResponseFields;
 	let $modal;
 	let $showSelection;
-	validate_store(additionalResponseFields, 'additionalResponseFields');
-	component_subscribe($$self, additionalResponseFields, $$value => $$invalidate(23, $additionalResponseFields = $$value));
-	validate_store(allowTypes, 'allowTypes');
-	component_subscribe($$self, allowTypes, $$value => $$invalidate(24, $allowTypes = $$value));
-	validate_store(format, 'format');
+	validate_store(maxFiles, "maxFiles");
+	component_subscribe($$self, maxFiles, $$value => $$invalidate(1, $maxFiles = $$value));
+	validate_store(format, "format");
 	component_subscribe($$self, format, $$value => $$invalidate(15, $format = $$value));
-	validate_store(maxFiles, 'maxFiles');
-	component_subscribe($$self, maxFiles, $$value => $$invalidate(2, $maxFiles = $$value));
-	validate_store(modal, 'modal');
+	validate_store(allowTypes, "allowTypes");
+	component_subscribe($$self, allowTypes, $$value => $$invalidate(23, $allowTypes = $$value));
+	validate_store(additionalResponseFields, "additionalResponseFields");
+	component_subscribe($$self, additionalResponseFields, $$value => $$invalidate(24, $additionalResponseFields = $$value));
+	validate_store(modal, "modal");
 	component_subscribe($$self, modal, $$value => $$invalidate(8, $modal = $$value));
-	validate_store(showSelection, 'showSelection');
+	validate_store(showSelection, "showSelection");
 	component_subscribe($$self, showSelection, $$value => $$invalidate(9, $showSelection = $$value));
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('Files', slots, []);
+	validate_slots("Files", slots, []);
 	const dispatch = createEventDispatcher();
 	const api = new API();
 	let getFiles = null;
@@ -3461,7 +3426,7 @@ function instance$3($$self, $$props, $$invalidate) {
 	let files = [];
 	let quantity = 0;
 	let isLoading = false;
-	let query = '';
+	let query = "";
 	let selectedFiles = [];
 
 	onMount(() => {
@@ -3502,10 +3467,10 @@ function instance$3($$self, $$props, $$invalidate) {
 			if ($allowTypes.length) {
 				allowedTypeFilter = [
 					{
-						filterType: 'connectorOr',
+						filterType: "connectorOr",
 						filters: [
 							...$allowTypes.map(type => ({
-								filterType: 'fileExtension',
+								filterType: "fileExtension",
 								fileExtension: type
 							}))
 						]
@@ -3514,13 +3479,13 @@ function instance$3($$self, $$props, $$invalidate) {
 			}
 
 			if (query) {
-				queryFilter = [{ filterType: 'searchTerm', term: query }];
+				queryFilter = [{ filterType: "searchTerm", term: query }];
 			}
 
 			if (query || $allowTypes.length) {
 				filter = {
 					filter: {
-						filterType: 'connectorAnd',
+						filterType: "connectorAnd",
 						filters: [...queryFilter, ...allowedTypeFilter]
 					}
 				};
@@ -3614,14 +3579,14 @@ function instance$3($$self, $$props, $$invalidate) {
 	};
 
 	const fetchDownloadFormats = async id => {
-		const convert = await api.get('/files/convert', {
+		const convert = await api.get("/files/convert", {
 			ids: [id],
-			downloadType: 'downloadFormat',
+			downloadType: "downloadFormat",
 			downloadFormatID: downloadFormat
 		});
 
 		const checkDownload = async () => {
-			const download = await api.get('/files/download', { downloadID: convert.downloadID });
+			const download = await api.get("/files/download", { downloadID: convert.downloadID });
 
 			if (!download.downloadURL) {
 				return await new Promise(resolve => {
@@ -3642,13 +3607,13 @@ function instance$3($$self, $$props, $$invalidate) {
 		for (let i = 0; i < selectedFiles.length; i += 1) {
 			const file = selectedFiles[i];
 
-			const url = downloadFormat === 'preview'
+			const url = downloadFormat === "preview"
 			? file.previewFileURL
 			: file.originalFileURL;
 
 			const thumbnail = file.modifiedPreviewFileURLs[0];
 
-			if (!['preview', 'original'].includes(downloadFormat)) {
+			if (!["preview", "original"].includes(downloadFormat)) {
 				// catch format
 				url = await fetchDownloadFormats(file.id);
 			}
@@ -3657,13 +3622,13 @@ function instance$3($$self, $$props, $$invalidate) {
 		}
 
 		$$invalidate(5, isLoading = false);
-		dispatch('submit', preparedFiles);
+		dispatch("submit", preparedFiles);
 	};
 
 	const writable_props = [];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1$1.warn(`<Files> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1$1.warn(`<Files> was created with unknown prop '${key}'`);
 	});
 
 	function fileitem_file_binding(value, file, each_value, file_index) {
@@ -3721,33 +3686,33 @@ function instance$3($$self, $$props, $$invalidate) {
 		markSelected,
 		fetchDownloadFormats,
 		submit,
-		downloadFormat,
 		max,
-		selectedCount,
-		valid,
-		maxReached,
-		$additionalResponseFields,
-		$allowTypes,
-		$format,
 		$maxFiles,
+		selectedCount,
+		maxReached,
+		valid,
+		$format,
+		downloadFormat,
+		$allowTypes,
+		$additionalResponseFields,
 		$modal,
 		$showSelection
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('getFiles' in $$props) $$invalidate(3, getFiles = $$props.getFiles);
-		if ('page' in $$props) page = $$props.page;
-		if ('pageSize' in $$props) pageSize = $$props.pageSize;
-		if ('files' in $$props) $$invalidate(4, files = $$props.files);
-		if ('quantity' in $$props) quantity = $$props.quantity;
-		if ('isLoading' in $$props) $$invalidate(5, isLoading = $$props.isLoading);
-		if ('query' in $$props) query = $$props.query;
-		if ('selectedFiles' in $$props) $$invalidate(0, selectedFiles = $$props.selectedFiles);
-		if ('downloadFormat' in $$props) downloadFormat = $$props.downloadFormat;
-		if ('max' in $$props) $$invalidate(14, max = $$props.max);
-		if ('selectedCount' in $$props) $$invalidate(1, selectedCount = $$props.selectedCount);
-		if ('valid' in $$props) $$invalidate(6, valid = $$props.valid);
-		if ('maxReached' in $$props) $$invalidate(7, maxReached = $$props.maxReached);
+		if ("getFiles" in $$props) $$invalidate(3, getFiles = $$props.getFiles);
+		if ("page" in $$props) page = $$props.page;
+		if ("pageSize" in $$props) pageSize = $$props.pageSize;
+		if ("files" in $$props) $$invalidate(4, files = $$props.files);
+		if ("quantity" in $$props) quantity = $$props.quantity;
+		if ("isLoading" in $$props) $$invalidate(5, isLoading = $$props.isLoading);
+		if ("query" in $$props) query = $$props.query;
+		if ("selectedFiles" in $$props) $$invalidate(0, selectedFiles = $$props.selectedFiles);
+		if ("max" in $$props) $$invalidate(14, max = $$props.max);
+		if ("selectedCount" in $$props) $$invalidate(2, selectedCount = $$props.selectedCount);
+		if ("maxReached" in $$props) $$invalidate(6, maxReached = $$props.maxReached);
+		if ("valid" in $$props) $$invalidate(7, valid = $$props.valid);
+		if ("downloadFormat" in $$props) downloadFormat = $$props.downloadFormat;
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -3755,20 +3720,20 @@ function instance$3($$self, $$props, $$invalidate) {
 	}
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty[0] & /*$maxFiles*/ 4) {
+		if ($$self.$$.dirty[0] & /*$maxFiles*/ 2) {
 			$$invalidate(14, max = $maxFiles);
 		}
 
 		if ($$self.$$.dirty[0] & /*selectedFiles*/ 1) {
-			$$invalidate(1, selectedCount = selectedFiles.length);
+			$$invalidate(2, selectedCount = selectedFiles.length);
 		}
 
-		if ($$self.$$.dirty[0] & /*selectedCount, max*/ 16386) {
-			$$invalidate(7, maxReached = selectedCount >= max && max > 0);
+		if ($$self.$$.dirty[0] & /*selectedCount, max*/ 16388) {
+			$$invalidate(6, maxReached = selectedCount >= max && max > 0);
 		}
 
-		if ($$self.$$.dirty[0] & /*selectedCount, $format*/ 32770) {
-			$$invalidate(6, valid = selectedCount >= 1 && $format);
+		if ($$self.$$.dirty[0] & /*selectedCount, $format*/ 32772) {
+			$$invalidate(7, valid = selectedCount >= 1 && $format);
 		}
 
 		if ($$self.$$.dirty[0] & /*$format*/ 32768) {
@@ -3778,13 +3743,13 @@ function instance$3($$self, $$props, $$invalidate) {
 
 	return [
 		selectedFiles,
-		selectedCount,
 		$maxFiles,
+		selectedCount,
 		getFiles,
 		files,
 		isLoading,
-		valid,
 		maxReached,
+		valid,
 		$modal,
 		$showSelection,
 		lazyLoad,
@@ -3802,7 +3767,7 @@ function instance$3($$self, $$props, $$invalidate) {
 class Files extends SvelteComponentDev {
 	constructor(options) {
 		super(options);
-		init(this, options, instance$3, create_fragment$3, safe_not_equal, {}, null, [-1, -1]);
+		init(this, options, instance$3, create_fragment$3, safe_not_equal, {}, [-1, -1]);
 
 		dispatch_dev("SvelteRegisterComponent", {
 			component: this,
@@ -3813,12 +3778,12 @@ class Files extends SvelteComponentDev {
 	}
 }
 
-/* src/User.svelte generated by Svelte v3.44.1 */
+/* src/User.svelte generated by Svelte v3.35.0 */
 const file$2 = "src/User.svelte";
 
 function create_fragment$2(ctx) {
 	let small;
-	let t0_value = lang('logged_in_as') + "";
+	let t0_value = lang("logged_in_as") + "";
 	let t0;
 	let t1;
 	let t2;
@@ -3845,12 +3810,12 @@ function create_fragment$2(ctx) {
 			a1.textContent = "Ausloggen";
 			attr_dev(a0, "href", a0_href_value = "https://" + /*$domain*/ ctx[2]);
 			attr_dev(a0, "target", "_blank");
-			attr_dev(a0, "class", "svelte-1hhl1wv");
+			attr_dev(a0, "class", "svelte-a2gk4x");
 			add_location(a0, file$2, 25, 69, 523);
 			attr_dev(a1, "href", "#");
-			attr_dev(a1, "class", "svelte-1hhl1wv");
+			attr_dev(a1, "class", "svelte-a2gk4x");
 			add_location(a1, file$2, 25, 128, 582);
-			attr_dev(small, "class", "svelte-1hhl1wv");
+			attr_dev(small, "class", "svelte-a2gk4x");
 			toggle_class(small, "no-modal", !/*$modal*/ ctx[1]);
 			add_location(small, file$2, 25, 0, 454);
 		},
@@ -3908,17 +3873,17 @@ function create_fragment$2(ctx) {
 function instance$2($$self, $$props, $$invalidate) {
 	let $modal;
 	let $domain;
-	validate_store(modal, 'modal');
+	validate_store(modal, "modal");
 	component_subscribe($$self, modal, $$value => $$invalidate(1, $modal = $$value));
-	validate_store(domain, 'domain');
+	validate_store(domain, "domain");
 	component_subscribe($$self, domain, $$value => $$invalidate(2, $domain = $$value));
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('User', slots, []);
+	validate_slots("User", slots, []);
 	const api = new API();
-	let username = '';
+	let username = "";
 
 	const fetchUser = async () => {
-		api.get('/users/current').then(user => {
+		api.get("/users/current").then(user => {
 			$$invalidate(0, username = user.user.displayName);
 		});
 	};
@@ -3927,13 +3892,13 @@ function instance$2($$self, $$props, $$invalidate) {
 	const dispatch = createEventDispatcher();
 
 	const logout = () => {
-		dispatch('logout');
+		dispatch("logout");
 	};
 
 	const writable_props = [];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<User> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<User> was created with unknown prop '${key}'`);
 	});
 
 	$$self.$capture_state = () => ({
@@ -3952,7 +3917,7 @@ function instance$2($$self, $$props, $$invalidate) {
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('username' in $$props) $$invalidate(0, username = $$props.username);
+		if ("username" in $$props) $$invalidate(0, username = $$props.username);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -3976,12 +3941,12 @@ class User extends SvelteComponentDev {
 	}
 }
 
-/* src/Upload.svelte generated by Svelte v3.44.1 */
+/* src/Upload.svelte generated by Svelte v3.35.0 */
 
 const { Error: Error_1, Object: Object_1, console: console_1 } = globals;
 const file$1 = "src/Upload.svelte";
 
-// (52:2) {#if loading}
+// (56:2) {#if loading}
 function create_if_block_2$1(ctx) {
 	let loading_1;
 	let current;
@@ -4013,14 +3978,14 @@ function create_if_block_2$1(ctx) {
 		block,
 		id: create_if_block_2$1.name,
 		type: "if",
-		source: "(52:2) {#if loading}",
+		source: "(56:2) {#if loading}",
 		ctx
 	});
 
 	return block;
 }
 
-// (55:2) {#if errorMessage}
+// (59:2) {#if errorMessage}
 function create_if_block_1$1(ctx) {
 	let error;
 	let current;
@@ -4068,14 +4033,14 @@ function create_if_block_1$1(ctx) {
 		block,
 		id: create_if_block_1$1.name,
 		type: "if",
-		source: "(55:2) {#if errorMessage}",
+		source: "(59:2) {#if errorMessage}",
 		ctx
 	});
 
 	return block;
 }
 
-// (56:2) <Error>
+// (60:2) <Error>
 function create_default_slot_1(ctx) {
 	let t;
 
@@ -4098,14 +4063,14 @@ function create_default_slot_1(ctx) {
 		block,
 		id: create_default_slot_1.name,
 		type: "slot",
-		source: "(56:2) <Error>",
+		source: "(60:2) <Error>",
 		ctx
 	});
 
 	return block;
 }
 
-// (60:2) {#if successMessage}
+// (64:2) {#if successMessage}
 function create_if_block$1(ctx) {
 	let error;
 	let current;
@@ -4154,14 +4119,14 @@ function create_if_block$1(ctx) {
 		block,
 		id: create_if_block$1.name,
 		type: "if",
-		source: "(60:2) {#if successMessage}",
+		source: "(64:2) {#if successMessage}",
 		ctx
 	});
 
 	return block;
 }
 
-// (61:2) <Error success={true}>
+// (65:2) <Error success={true}>
 function create_default_slot(ctx) {
 	let t;
 
@@ -4184,7 +4149,7 @@ function create_default_slot(ctx) {
 		block,
 		id: create_default_slot.name,
 		type: "slot",
-		source: "(61:2) <Error success={true}>",
+		source: "(65:2) <Error success={true}>",
 		ctx
 	});
 
@@ -4208,9 +4173,9 @@ function create_fragment$1(ctx) {
 			if (if_block1) if_block1.c();
 			t1 = space();
 			if (if_block2) if_block2.c();
-			attr_dev(div, "class", "upload svelte-1bvmozp");
+			attr_dev(div, "class", "upload svelte-74nv7x");
 			toggle_class(div, "no-modal", !/*$modal*/ ctx[3]);
-			add_location(div, file$1, 50, 0, 1426);
+			add_location(div, file$1, 54, 0, 1553);
 		},
 		l: function claim(nodes) {
 			throw new Error_1("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -4330,15 +4295,15 @@ function create_fragment$1(ctx) {
 
 function instance$1($$self, $$props, $$invalidate) {
 	let $modal;
-	validate_store(modal, 'modal');
+	validate_store(modal, "modal");
 	component_subscribe($$self, modal, $$value => $$invalidate(3, $modal = $$value));
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('Upload', slots, []);
+	validate_slots("Upload", slots, []);
 	const api = new API();
 	let loading = false;
 	let { config = {} } = $$props;
-	let errorMessage = '';
-	let successMessage = '';
+	let errorMessage = "";
+	let successMessage = "";
 	const dispatch = createEventDispatcher();
 
 	const upload = async () => {
@@ -4349,24 +4314,28 @@ function instance$1($$self, $$props, $$invalidate) {
 		$$invalidate(0, loading = true);
 
 		try {
-			$$invalidate(1, errorMessage = '');
-			$$invalidate(2, successMessage = '');
+			$$invalidate(1, errorMessage = "");
+			$$invalidate(2, successMessage = "");
 			const formData = new FormData();
-			formData.set('asynchronousConversion', false);
+			formData.set("asynchronousConversion", false);
 
 			Object.keys(config).forEach(key => {
-				formData.set(key, config[key]);
+				if (key !== "file") {
+					formData.set(key, JSON.stringify(config[key]));
+				} else {
+					formData.set(key, config[key]);
+				}
 			});
 
-			const response = await api.post('/files', formData, true, null, false, false);
+			const response = await api.post("/files", formData, true, null, false, false);
 			$$invalidate(0, loading = false);
-			dispatch('uploaded');
+			dispatch("uploaded", response);
 
 			if (response.success && response.isDuplicate) {
-				$$invalidate(1, errorMessage = lang('duplicate_file'));
-				dispatch('error', lang('duplicate_file'));
+				$$invalidate(1, errorMessage = lang("duplicate_file"));
+				dispatch("error", lang("duplicate_file"));
 			} else {
-				$$invalidate(2, successMessage = lang('success_upload_file'));
+				$$invalidate(2, successMessage = lang("success_upload_file"));
 			}
 
 			return response;
@@ -4374,7 +4343,7 @@ function instance$1($$self, $$props, $$invalidate) {
 			$$invalidate(0, loading = false);
 			$$invalidate(1, errorMessage = error);
 			console.error(error);
-			dispatch('error', error);
+			dispatch("error", error);
 		}
 
 		return false;
@@ -4384,14 +4353,14 @@ function instance$1($$self, $$props, $$invalidate) {
 		await upload();
 	});
 
-	const writable_props = ['config'];
+	const writable_props = ["config"];
 
 	Object_1.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<Upload> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Upload> was created with unknown prop '${key}'`);
 	});
 
 	$$self.$$set = $$props => {
-		if ('config' in $$props) $$invalidate(4, config = $$props.config);
+		if ("config" in $$props) $$invalidate(4, config = $$props.config);
 	};
 
 	$$self.$capture_state = () => ({
@@ -4413,10 +4382,10 @@ function instance$1($$self, $$props, $$invalidate) {
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('loading' in $$props) $$invalidate(0, loading = $$props.loading);
-		if ('config' in $$props) $$invalidate(4, config = $$props.config);
-		if ('errorMessage' in $$props) $$invalidate(1, errorMessage = $$props.errorMessage);
-		if ('successMessage' in $$props) $$invalidate(2, successMessage = $$props.successMessage);
+		if ("loading" in $$props) $$invalidate(0, loading = $$props.loading);
+		if ("config" in $$props) $$invalidate(4, config = $$props.config);
+		if ("errorMessage" in $$props) $$invalidate(1, errorMessage = $$props.errorMessage);
+		if ("successMessage" in $$props) $$invalidate(2, successMessage = $$props.successMessage);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -4454,7 +4423,7 @@ class Upload extends SvelteComponentDev {
 	}
 }
 
-/* src/App.svelte generated by Svelte v3.44.1 */
+/* src/App.svelte generated by Svelte v3.35.0 */
 const file = "src/App.svelte";
 
 // (46:0) {#if $show}
@@ -4474,14 +4443,14 @@ function create_if_block(ctx) {
 	let mounted;
 	let dispose;
 	logo = new Logo({ $$inline: true });
-	let if_block0 = /*$isAuthenticated*/ ctx[4] && /*$mode*/ ctx[5] == 'get' && create_if_block_5(ctx);
+	let if_block0 = /*$isAuthenticated*/ ctx[4] && /*$mode*/ ctx[5] == "get" && create_if_block_5(ctx);
 	const if_block_creators = [create_if_block_2, create_if_block_3, create_if_block_4];
 	const if_blocks = [];
 
 	function select_block_type(ctx, dirty) {
 		if (!/*$isAuthenticated*/ ctx[4]) return 0;
-		if (/*$mode*/ ctx[5] == 'get') return 1;
-		if (/*$mode*/ ctx[5] == 'upload') return 2;
+		if (/*$mode*/ ctx[5] == "get") return 1;
+		if (/*$mode*/ ctx[5] == "upload") return 2;
 		return -1;
 	}
 
@@ -4506,14 +4475,14 @@ function create_if_block(ctx) {
 			t3 = space();
 			if (if_block2) if_block2.c();
 			attr_dev(a, "href", "#");
-			attr_dev(a, "class", "close svelte-1it77f3");
+			attr_dev(a, "class", "close svelte-tp691d");
 			add_location(a, file, 53, 3, 1346);
-			attr_dev(header, "class", "svelte-1it77f3");
+			attr_dev(header, "class", "svelte-tp691d");
 			add_location(header, file, 48, 2, 1207);
-			attr_dev(div, "class", "container svelte-1it77f3");
+			attr_dev(div, "class", "container svelte-tp691d");
 			toggle_class(div, "container--enlarge", /*$isAuthenticated*/ ctx[4]);
 			add_location(div, file, 47, 1, 1137);
-			attr_dev(main, "class", "svelte-1it77f3");
+			attr_dev(main, "class", "svelte-tp691d");
 			toggle_class(main, "no-modal", !/*$modal*/ ctx[3]);
 			add_location(main, file, 46, 0, 1104);
 		},
@@ -4542,7 +4511,7 @@ function create_if_block(ctx) {
 			}
 		},
 		p: function update(ctx, dirty) {
-			if (/*$isAuthenticated*/ ctx[4] && /*$mode*/ ctx[5] == 'get') {
+			if (/*$isAuthenticated*/ ctx[4] && /*$mode*/ ctx[5] == "get") {
 				if (if_block0) {
 					if_block0.p(ctx, dirty);
 
@@ -4689,7 +4658,7 @@ function create_if_block_5(ctx) {
 	}
 
 	searchfield = new SearchField({ props: searchfield_props, $$inline: true });
-	binding_callbacks.push(() => bind(searchfield, 'value', searchfield_value_binding));
+	binding_callbacks.push(() => bind(searchfield, "value", searchfield_value_binding));
 
 	const block = {
 		c: function create() {
@@ -4753,7 +4722,7 @@ function create_if_block_4(ctx) {
 	}
 
 	upload = new Upload({ props: upload_props, $$inline: true });
-	binding_callbacks.push(() => bind(upload, 'config', upload_config_binding));
+	binding_callbacks.push(() => bind(upload, "config", upload_config_binding));
 	upload.$on("uploaded", /*uploaded*/ ctx[10]);
 	upload.$on("error", /*uploadError*/ ctx[11]);
 
@@ -4957,7 +4926,7 @@ function create_fragment(ctx) {
 			link0 = element("link");
 			link1 = element("link");
 			style = element("style");
-			style.textContent = "/* Global CSS via SASS */\n#pixxio-integration {\n  font-family: 'Heebo', Arial, Helvetica, sans-serif;\n  font-size: 16px;\n  all: initial; }";
+			style.textContent = "/* Global CSS via SASS */\n#pixxio-integration {\n  font-family: \"Heebo\", Arial, Helvetica, sans-serif;\n  font-size: 16px;\n  all: initial;\n}";
 			attr_dev(link0, "rel", "preconnect");
 			attr_dev(link0, "href", "https://fonts.gstatic.com");
 			attr_dev(link0, "crossorigin", "");
@@ -5037,19 +5006,19 @@ function instance($$self, $$props, $$invalidate) {
 	let $modal;
 	let $isAuthenticated;
 	let $mode;
-	validate_store(show, 'show');
+	validate_store(show, "show");
 	component_subscribe($$self, show, $$value => $$invalidate(2, $show = $$value));
-	validate_store(modal, 'modal');
+	validate_store(modal, "modal");
 	component_subscribe($$self, modal, $$value => $$invalidate(3, $modal = $$value));
-	validate_store(isAuthenticated, 'isAuthenticated');
+	validate_store(isAuthenticated, "isAuthenticated");
 	component_subscribe($$self, isAuthenticated, $$value => $$invalidate(4, $isAuthenticated = $$value));
-	validate_store(mode, 'mode');
+	validate_store(mode, "mode");
 	component_subscribe($$self, mode, $$value => $$invalidate(5, $mode = $$value));
 	let { $$slots: slots = {}, $$scope } = $$props;
-	validate_slots('App', slots, []);
+	validate_slots("App", slots, []);
 	let { uploadConfig = {} } = $$props;
 	const dispatch = createEventDispatcher();
-	let searchQuery = '';
+	let searchQuery = "";
 
 	// authenticated
 	const authenticated = () => {
@@ -5057,33 +5026,33 @@ function instance($$self, $$props, $$invalidate) {
 	};
 
 	const logout = () => {
-		sessionStorage.removeItem('refreshToken');
-		sessionStorage.removeItem('domain');
+		sessionStorage.removeItem("refreshToken");
+		sessionStorage.removeItem("domain");
 		isAuthenticated.update(() => false);
-		domain.update(() => '');
-		refreshToken.update(() => '');
+		domain.update(() => "");
+		refreshToken.update(() => "");
 	};
 
 	const cancel = () => {
-		dispatch('cancel');
+		dispatch("cancel");
 	};
 
 	const submit = ({ detail }) => {
-		dispatch('submit', detail);
+		dispatch("submit", detail);
 	};
 
 	const uploaded = ({ detail }) => {
-		dispatch('uploaded', detail);
+		dispatch("uploaded", detail);
 	};
 
 	const uploadError = ({ detail }) => {
-		dispatch('uploadError', detail);
+		dispatch("uploadError", detail);
 	};
 
-	const writable_props = ['uploadConfig'];
+	const writable_props = ["uploadConfig"];
 
 	Object.keys($$props).forEach(key => {
-		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<App> was created with unknown prop '${key}'`);
+		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
 	});
 
 	function searchfield_value_binding(value) {
@@ -5097,7 +5066,7 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	$$self.$$set = $$props => {
-		if ('uploadConfig' in $$props) $$invalidate(0, uploadConfig = $$props.uploadConfig);
+		if ("uploadConfig" in $$props) $$invalidate(0, uploadConfig = $$props.uploadConfig);
 	};
 
 	$$self.$capture_state = () => ({
@@ -5133,8 +5102,8 @@ function instance($$self, $$props, $$invalidate) {
 	});
 
 	$$self.$inject_state = $$props => {
-		if ('uploadConfig' in $$props) $$invalidate(0, uploadConfig = $$props.uploadConfig);
-		if ('searchQuery' in $$props) $$invalidate(1, searchQuery = $$props.searchQuery);
+		if ("uploadConfig" in $$props) $$invalidate(0, uploadConfig = $$props.uploadConfig);
+		if ("searchQuery" in $$props) $$invalidate(1, searchQuery = $$props.searchQuery);
 	};
 
 	if ($$props && "$$inject" in $$props) {
@@ -5283,6 +5252,40 @@ class PIXXIO {
 		});
 	}
 
+	bulkMainVersionCheck(ids) {
+		const api = new API();
+		const auth = get_store_value(isAuthenticated);
+		return new Promise(async (resolve, reject) => {
+			if (!auth) {
+				reject();
+			} else {
+				try {
+					const _options = { 
+						page: 1,
+						pageSize: ids.length,
+						responseFields: [
+							"id",
+							"isMainVersion",
+						],
+						filter: {
+								filterType: 'files',
+								fileIDs: ids
+							}
+					};
+		
+					const data = await api.get(`/files`, _options);
+					if(!data.success) {
+						throw new Error(data.errormessage)
+					}
+					resolve(data.files);
+				} catch(e) {
+					console.log(e);
+					reject(e);
+				}
+			}
+		})
+	}
+
 	getFileById(id, options) {
 		const api = new API();
 		const auth = get_store_value(isAuthenticated);
@@ -5326,5 +5329,5 @@ class PIXXIO {
 
 window.PIXXIO = PIXXIO;
 
-export { PIXXIO as default };
+export default PIXXIO;
 //# sourceMappingURL=index.js.map

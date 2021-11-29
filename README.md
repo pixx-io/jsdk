@@ -103,3 +103,26 @@ p.pushMedia({
 
 - `file` : File binary
 - you can chain other options directly (like directory or keywords). For those check the API documentation of pixx.io
+
+
+### bulkMainVersionCheck(ids: number[])
+
+returns an array of ids and mainVersion boolean to check if a file has changed 
+
+```javascript
+p.pushMedia([5555,5551,5553]).then(() => {
+  /** do whatever you want **/
+}).catch(() => {
+  /** check failed **/
+});
+```
+
+#### Returns
+
+```json
+[
+  { "id": 5555, "isMainVersion": true },
+  ...
+]
+```
+
