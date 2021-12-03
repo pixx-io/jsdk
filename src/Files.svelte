@@ -38,6 +38,7 @@
   });
 
   const changes = () => {
+    page = 1;
     fetchFiles();
   };
 

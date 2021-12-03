@@ -110,7 +110,7 @@ p.pushMedia({
 returns an array of ids and mainVersion boolean to check if a file has changed 
 
 ```javascript
-p.pushMedia([5555,5551,5553]).then(() => {
+p.bulkMainVersionCheck([5555,5551,5553]).then(() => {
   /** do whatever you want **/
 }).catch(() => {
   /** check failed **/

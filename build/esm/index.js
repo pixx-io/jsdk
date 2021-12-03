@@ -1207,7 +1207,7 @@ class Loading extends SvelteComponentDev {
 const { Error: Error_1$4 } = globals;
 const file$7 = "src/Login.svelte";
 
-// (84:2) {#if !$domain}
+// (85:2) {#if !$domain}
 function create_if_block_2$3(ctx) {
 	let div;
 	let input;
@@ -1228,12 +1228,12 @@ function create_if_block_2$3(ctx) {
 			attr_dev(input, "type", "text");
 			attr_dev(input, "placeholder", " ");
 			attr_dev(input, "class", "svelte-1tlmu99");
-			add_location(input, file$7, 85, 4, 2158);
+			add_location(input, file$7, 86, 4, 2241);
 			attr_dev(label, "for", "pixxio-mediaspace");
 			attr_dev(label, "class", "svelte-1tlmu99");
-			add_location(label, file$7, 86, 4, 2270);
+			add_location(label, file$7, 87, 4, 2353);
 			attr_dev(div, "class", "field svelte-1tlmu99");
-			add_location(div, file$7, 84, 2, 2134);
+			add_location(div, file$7, 85, 2, 2217);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, div, anchor);
@@ -1267,14 +1267,14 @@ function create_if_block_2$3(ctx) {
 		block,
 		id: create_if_block_2$3.name,
 		type: "if",
-		source: "(84:2) {#if !$domain}",
+		source: "(85:2) {#if !$domain}",
 		ctx
 	});
 
 	return block;
 }
 
-// (98:2) {#if hasError}
+// (99:2) {#if hasError}
 function create_if_block_1$4(ctx) {
 	let small;
 
@@ -1283,7 +1283,7 @@ function create_if_block_1$4(ctx) {
 			small = element("small");
 			small.textContent = `${lang("signin_error")}`;
 			attr_dev(small, "class", "error svelte-1tlmu99");
-			add_location(small, file$7, 98, 2, 2768);
+			add_location(small, file$7, 99, 2, 2851);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, small, anchor);
@@ -1298,14 +1298,14 @@ function create_if_block_1$4(ctx) {
 		block,
 		id: create_if_block_1$4.name,
 		type: "if",
-		source: "(98:2) {#if hasError}",
+		source: "(99:2) {#if hasError}",
 		ctx
 	});
 
 	return block;
 }
 
-// (105:2) {#if isLoading}
+// (106:2) {#if isLoading}
 function create_if_block$6(ctx) {
 	let loading;
 	let current;
@@ -1337,7 +1337,7 @@ function create_if_block$6(ctx) {
 		block,
 		id: create_if_block$6.name,
 		type: "if",
-		source: "(105:2) {#if isLoading}",
+		source: "(106:2) {#if isLoading}",
 		ctx
 	});
 
@@ -1410,42 +1410,42 @@ function create_fragment$8(ctx) {
 			t15 = space();
 			if (if_block2) if_block2.c();
 			attr_dev(h2, "class", "svelte-1tlmu99");
-			add_location(h2, file$7, 81, 2, 2051);
+			add_location(h2, file$7, 82, 2, 2134);
 			attr_dev(p, "class", "svelte-1tlmu99");
-			add_location(p, file$7, 82, 2, 2079);
+			add_location(p, file$7, 83, 2, 2162);
 			attr_dev(input0, "id", "pixxio-username");
 			input0.disabled = /*isLoading*/ ctx[3];
 			attr_dev(input0, "type", "text");
 			attr_dev(input0, "placeholder", " ");
 			attr_dev(input0, "class", "svelte-1tlmu99");
-			add_location(input0, file$7, 90, 4, 2373);
+			add_location(input0, file$7, 91, 4, 2456);
 			attr_dev(label0, "for", "pixxio-username");
 			attr_dev(label0, "class", "svelte-1tlmu99");
-			add_location(label0, file$7, 91, 4, 2481);
+			add_location(label0, file$7, 92, 4, 2564);
 			attr_dev(div0, "class", "field svelte-1tlmu99");
-			add_location(div0, file$7, 89, 2, 2349);
+			add_location(div0, file$7, 90, 2, 2432);
 			attr_dev(input1, "id", "pixxio-password");
 			input1.disabled = /*isLoading*/ ctx[3];
 			attr_dev(input1, "type", "password");
 			attr_dev(input1, "placeholder", " ");
 			attr_dev(input1, "class", "svelte-1tlmu99");
-			add_location(input1, file$7, 94, 4, 2572);
+			add_location(input1, file$7, 95, 4, 2655);
 			attr_dev(label1, "for", "pixxio-password");
 			attr_dev(label1, "class", "svelte-1tlmu99");
-			add_location(label1, file$7, 95, 4, 2684);
+			add_location(label1, file$7, 96, 4, 2767);
 			attr_dev(div1, "class", "field svelte-1tlmu99");
-			add_location(div1, file$7, 93, 2, 2548);
+			add_location(div1, file$7, 94, 2, 2631);
 			attr_dev(button0, "class", "button button--secondary svelte-1tlmu99");
-			add_location(button0, file$7, 101, 4, 2860);
+			add_location(button0, file$7, 102, 4, 2943);
 			attr_dev(button1, "class", "button svelte-1tlmu99");
 			attr_dev(button1, "type", "submit");
 			button1.disabled = /*isLoading*/ ctx[3];
-			add_location(button1, file$7, 102, 4, 2949);
+			add_location(button1, file$7, 103, 4, 3032);
 			attr_dev(div2, "class", "buttonGroup svelte-1tlmu99");
-			add_location(div2, file$7, 100, 2, 2830);
+			add_location(div2, file$7, 101, 2, 2913);
 			attr_dev(div3, "class", "login fields svelte-1tlmu99");
 			toggle_class(div3, "no-modal", !/*$modal*/ ctx[6]);
-			add_location(div3, file$7, 80, 0, 1995);
+			add_location(div3, file$7, 81, 0, 2078);
 		},
 		l: function claim(nodes) {
 			throw new Error_1$4("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1641,12 +1641,13 @@ function instance$8($$self, $$props, $$invalidate) {
 	const login = async () => {
 		$$invalidate(3, isLoading = true);
 		$$invalidate(2, hasError = false);
+		$$invalidate(4, mediaspace = mediaspace.replace(/(http|https):\/\//, "").trim());
 
 		try {
 			const formData = new FormData();
 			formData.set("applicationKey", $appKey);
-			formData.set("userNameOrEmail", username);
-			formData.set("password", password);
+			formData.set("userNameOrEmail", username.trim());
+			formData.set("password", password.trim());
 			const data = await fetch(`https://${mediaspace}/gobackend/login`, { method: "POST", body: formData });
 			const response = await data.json();
 			$$invalidate(3, isLoading = false);
@@ -2847,7 +2848,7 @@ function get_each_context(ctx, list, i) {
 	return child_ctx;
 }
 
-// (252:4) {:catch}
+// (253:4) {:catch}
 function create_catch_block(ctx) {
 	let t;
 
@@ -2870,14 +2871,14 @@ function create_catch_block(ctx) {
 		block,
 		id: create_catch_block.name,
 		type: "catch",
-		source: "(252:4) {:catch}",
+		source: "(253:4) {:catch}",
 		ctx
 	});
 
 	return block;
 }
 
-// (229:4) {:then}
+// (230:4) {:then}
 function create_then_block(ctx) {
 	let section;
 	let ul;
@@ -2956,22 +2957,22 @@ function create_then_block(ctx) {
 			button = element("button");
 			t11 = text(t11_value);
 			attr_dev(ul, "class", "svelte-wuqdzu");
-			add_location(ul, file$3, 231, 6, 5857);
+			add_location(ul, file$3, 232, 6, 5871);
 			attr_dev(section, "class", "pixxioFiles__container svelte-wuqdzu");
 			toggle_class(section, "pixxioFiles__container--maxReached", /*maxReached*/ ctx[6]);
-			add_location(section, file$3, 230, 4, 5733);
+			add_location(section, file$3, 231, 4, 5747);
 			attr_dev(div0, "class", "pixxioFormats svelte-wuqdzu");
-			add_location(div0, file$3, 238, 4, 6063);
-			add_location(strong, file$3, 243, 9, 6168);
-			add_location(p, file$3, 243, 6, 6165);
+			add_location(div0, file$3, 239, 4, 6077);
+			add_location(strong, file$3, 244, 9, 6182);
+			add_location(p, file$3, 244, 6, 6179);
 			set_style(span, "flex-grow", "1");
-			add_location(span, file$3, 247, 6, 6398);
+			add_location(span, file$3, 248, 6, 6412);
 			attr_dev(button, "class", "button svelte-wuqdzu");
 			attr_dev(button, "type", "submit");
 			button.disabled = button_disabled_value = !/*valid*/ ctx[7] || /*isLoading*/ ctx[5];
-			add_location(button, file$3, 249, 6, 6481);
+			add_location(button, file$3, 250, 6, 6495);
 			attr_dev(div1, "class", "buttonGroup buttonGroup--right svelte-wuqdzu");
-			add_location(div1, file$3, 242, 4, 6114);
+			add_location(div1, file$3, 243, 4, 6128);
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, section, anchor);
@@ -3118,14 +3119,14 @@ function create_then_block(ctx) {
 		block,
 		id: create_then_block.name,
 		type: "then",
-		source: "(229:4) {:then}",
+		source: "(230:4) {:then}",
 		ctx
 	});
 
 	return block;
 }
 
-// (233:8) {#each files as file}
+// (234:8) {#each files as file}
 function create_each_block(ctx) {
 	let fileitem;
 	let updating_file;
@@ -3200,14 +3201,14 @@ function create_each_block(ctx) {
 		block,
 		id: create_each_block.name,
 		type: "each",
-		source: "(233:8) {#each files as file}",
+		source: "(234:8) {#each files as file}",
 		ctx
 	});
 
 	return block;
 }
 
-// (245:6) {#if $showSelection}
+// (246:6) {#if $showSelection}
 function create_if_block$2(ctx) {
 	let selection;
 	let updating_selectedFiles;
@@ -3264,14 +3265,14 @@ function create_if_block$2(ctx) {
 		block,
 		id: create_if_block$2.name,
 		type: "if",
-		source: "(245:6) {#if $showSelection}",
+		source: "(246:6) {#if $showSelection}",
 		ctx
 	});
 
 	return block;
 }
 
-// (227:21)        <Loading></Loading>     {:then}
+// (228:21)        <Loading></Loading>     {:then}
 function create_pending_block(ctx) {
 	let loading;
 	let current;
@@ -3304,7 +3305,7 @@ function create_pending_block(ctx) {
 		block,
 		id: create_pending_block.name,
 		type: "pending",
-		source: "(227:21)        <Loading></Loading>     {:then}",
+		source: "(228:21)        <Loading></Loading>     {:then}",
 		ctx
 	});
 
@@ -3335,7 +3336,7 @@ function create_fragment$3(ctx) {
 			info.block.c();
 			attr_dev(div, "class", "pixxioFiles svelte-wuqdzu");
 			toggle_class(div, "no-modal", !/*$modal*/ ctx[8]);
-			add_location(div, file$3, 225, 0, 5612);
+			add_location(div, file$3, 226, 0, 5626);
 		},
 		l: function claim(nodes) {
 			throw new Error_1$1("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3441,6 +3442,7 @@ function instance$3($$self, $$props, $$invalidate) {
 	});
 
 	const changes = () => {
+		page = 1;
 		fetchFiles();
 	};
 
@@ -5260,24 +5262,39 @@ class PIXXIO {
 				reject();
 			} else {
 				try {
-					const _options = { 
-						page: 1,
-						pageSize: ids.length,
-						responseFields: [
-							"id",
-							"isMainVersion",
-						],
-						filter: {
-								filterType: 'files',
-								fileIDs: ids
-							}
-					};
-		
-					const data = await api.get(`/files`, _options);
-					if(!data.success) {
-						throw new Error(data.errormessage)
+					const chunkSize = 200;
+					const chunks = [];
+					for(let i = 0; i < ids.length; i++) {
+						const key = Math.floor(i/chunkSize);
+						if (!chunks[key]) {
+							chunks[key] = [];
+						}
+						chunks[key].push(ids[i]);
 					}
-					resolve(data.files);
+					
+					Promise.all(chunks.map(async chunk => {
+						const _options = { 
+							ids: chunk,
+							responseFields: [
+								"id",
+								"isMainVersion",
+								"mainVersion",
+								"originalFileURL"
+							]
+						};
+						const data = await api.get(`/files/existence`, _options);
+						if(!data.success) {
+							throw new Error(data.errormessage)
+						}
+						return data;
+					})).then((data) => {
+						let files = [];
+						debugger;
+						data.forEach(d => {
+							files = [...files, ...d.files];
+						});
+						resolve(files);
+					});
 				} catch(e) {
 					console.log(e);
 					reject(e);

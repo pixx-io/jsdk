@@ -38,11 +38,12 @@
   const login = async () => {
     isLoading = true;
     hasError = false;
+    mediaspace = mediaspace.replace(/(http|https):\/\//, '').trim();
     try {
       const formData = new FormData();
       formData.set('applicationKey', $appKey);
-      formData.set('userNameOrEmail', username);
-      formData.set('password', password);
+      formData.set('userNameOrEmail', username.trim());
+      formData.set('password', password.trim());
 
       const data = await fetch(`https://${mediaspace}/gobackend/login`, {
         method: 'POST',

@@ -114,24 +114,39 @@ class PIXXIO {
 				reject();
 			} else {
 				try {
-					const _options = { 
-						page: 1,
-						pageSize: ids.length,
-						responseFields: [
-							"id",
-							"isMainVersion",
-						],
-						filter: {
-								filterType: 'files',
-								fileIDs: ids
-							}
+					const chunkSize = 200;
+					const chunks = [];
+					for(let i = 0; i < ids.length; i++) {
+						const key = Math.floor(i/chunkSize);
+						if (!chunks[key]) {
+							chunks[key] = [];
+						}
+						chunks[key].push(ids[i]);
 					}
-		
-					const data = await api.get(`/files`, _options);
-					if(!data.success) {
-						throw new Error(data.errormessage)
-					}
-					resolve(data.files);
+					
+					Promise.all(chunks.map(async chunk => {
+						const _options = { 
+							ids: chunk,
+							responseFields: [
+								"id",
+								"isMainVersion",
+								"mainVersion",
+								"originalFileURL"
+							]
+						};
+						const data = await api.get(`/files/existence`, _options);
+						if(!data.success) {
+							throw new Error(data.errormessage)
+						}
+						return data;
+					})).then((data) => {
+						let files = [];
+						debugger;
+						data.forEach(d => {
+							files = [...files, ...d.files]
+						});
+						resolve(files);
+					})
 				} catch(e) {
 					console.log(e);
 					reject(e);
