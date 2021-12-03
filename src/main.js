@@ -141,7 +141,6 @@ class PIXXIO {
 						return data;
 					})).then((data) => {
 						let files = [];
-						debugger;
 						data.forEach(d => {
 							files = [...files, ...d.files]
 						});
