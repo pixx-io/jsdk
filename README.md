@@ -121,7 +121,7 @@ p.bulkMainVersionCheck([5555,5551,5553]).then(() => {
 
 ```json
 [
-  { "id": 5555, "isMainVersion": true },
+  { "id": 5555, "isMainVersion": false, "mainVersion": 5556, "originalFileURL": "..." },
   ...
 ]
 ```
