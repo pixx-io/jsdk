@@ -5279,7 +5279,8 @@ class PIXXIO {
 								"id",
 								"isMainVersion",
 								"mainVersion",
-								"originalFileURL"
+								"originalFileURL",
+								"fileName"
 							]
 						};
 						const data = await api.get(`/files/existence`, _options);
