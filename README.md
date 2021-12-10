@@ -32,7 +32,8 @@ const p = new PIXXIO({
   appUrl: string,
   modal: boolean,
   element: HTMLElement,
-  language: string
+  language: string,
+  askForProxy: boolean
 })
 ```
 ### Options
@@ -42,7 +43,8 @@ const p = new PIXXIO({
 - `element`: if element is set, then this element will be used as root element for the pixxio selector. Otherwise an own element is created and added to the body. 
 - `modal`: if modal is set to false. the selector won't open as an overlay. default `true`
 - `language`: currently supported are german `de` and english `en`
-
+- `askForProxy`: if its true it shows the advanced settings at the login screen to enter proxy configurations. The JSDK does not use this information but it stores for you and you can ask for proxy settings be calling the method `getProxyConfiguration()`
+- `compact`: shows the interface as compact version. just necessary elements. default `false`
 ### Events
 
 - `authState`: returns an object `{ login: boolean }` everytime the state is changed
@@ -67,6 +69,9 @@ p.getMedia({
 - `allowedTypes`: define the file extensions which are allowed to select. For example `['jpg', 'png']` default: `[]`
 - `allowedFormats`: define download formats which are allowed to select. For original or preview use the keys: `preview`, `original` the other system configured formats can be defined by id. So for example `['preview', 123, 321]` default: `null`
 - `additionalResponseFields`: is an array of responseFields. the possible fields are described in the official pixx.io API.
+- `showFileType`: shows the file type as tag in the file list. default `true`
+- `showFileSize`: shows the file size as tag in the file list. default `true`
+- `showFileName`: shows the file name under the file item as caption. default `false`
 
 #### Returns
 
@@ -126,3 +131,31 @@ p.bulkMainVersionCheck([5555,5551,5553]).then(() => {
 ]
 ```
 
+### getProxyConfiguration()
+
+returns the entered configuration during login 
+
+```js
+p.getProxyConfiguration(); 
+```
+#### Returns
+
+```json
+{
+  "protocol": "",
+  "host": "",
+  "port": "",
+  "auth": {
+    "username": "",
+    "password": ""
+  }
+}
+```
+
+### forceLogout
+
+forces the logout of the pixx.io mediaspace
+
+```js 
+p.forceLogout()
+```

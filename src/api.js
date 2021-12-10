@@ -1,4 +1,5 @@
-import { accessToken, appKey, domain, refreshToken } from "./store/store";
+import axios from "axios";
+import { accessToken, appKey, domain, refreshToken, proxy } from "./store/store";
 
 export class API {
 
@@ -6,6 +7,7 @@ export class API {
   refreshToken = '';
   domain = '';
   appKey = '';
+  proxyConfig = {}
 
   constructor(
   ) {
@@ -44,9 +46,9 @@ export class API {
         if(data.success) {
           this.accessToken = data.accessToken;
           accessToken.update(() => data.accessToken)
-          resolve();
+          resolve(data);
         } else {
-          reject();
+          reject(data);
         }
       }).catch(reject);
     })
@@ -54,6 +56,7 @@ export class API {
   }
 
   call(method, path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true) {
+    this.proxyConfig = JSON.parse(localStorage.getItem('proxy'));
     return new Promise((resolve, reject) => {
       const request = (requestData, headers) => {
         const url = 'https://' + this.domain.replace(/(http|https):\/\//, '') + '/gobackend' + path;
@@ -81,21 +84,26 @@ export class API {
           headers = {...headers, ...additionalHeaders};
         }
 
-        let observeCall = { url: url, request: { method: 'post', headers, body: params } };
+        let observeCall = { url: url, request: { method: 'post', headers, data: params } };
 
         switch (method) {
           case 'get':
             observeCall = { url: url + '?' + params, request: { headers } };
             break;
           case 'put':
-            observeCall = { url: url, request: { method: 'put', headers, body: params } };
+            observeCall = { url: url, request: { method: 'put', headers, data: params } };
             break;
           case 'delete':
-            observeCall = { url: url, request: { method: 'delete', headers, body: params } };
+            observeCall = { url: url, request: { method: 'delete', headers, data: params } };
             break;
         }
 
-        fetch(observeCall.url, observeCall.request).then(data => data.json()).then((data) => {
+        axios({
+          url: observeCall.url,
+          proxy: this.proxyConfig,
+          ...observeCall.request
+        }).then(({data}) => {
+          
           if (data.success === true || data.success === 'true') {
             resolve(data);
           } else {

@@ -4,7 +4,7 @@
   import Selection from "./Selection.svelte";
   import FileItem from "./FileItem.svelte";
   import Loading from './Loading.svelte';
-  import { modal } from './store/store';
+  import { modal, compact } from './store/store';
   import { searchTerm, format, maxFiles, showSelection, allowTypes, additionalResponseFields, changed } from './store/media';
   import {API} from './api'
   import { lang } from './translation';
@@ -144,6 +144,11 @@
     }
   }
 
+  const selectAndClose = (event) => {
+    select(event);
+    submit();
+  }
+
   const select = (event) => {
     // if (max && max <= selectedFiles.length) {
     //   return;
@@ -232,24 +237,25 @@
     <section class="pixxioFiles__container" on:scroll={lazyLoad} class:pixxioFiles__container--maxReached={maxReached} > 
       <ul>
         {#each files as file}
-        <FileItem bind:file={file} bind:selected={file.selected} on:select={select} on:deselect={deselect}></FileItem>
+        <FileItem bind:file={file} bind:selected={file.selected} on:selectAndClose={selectAndClose} on:select={select} on:deselect={deselect}></FileItem>
         {/each}
       </ul>
     </section>
+    <div class:compact={$compact}>
+      <div class="buttonGroup buttonGroup--right">
+        {#if $maxFiles > 0}
+        <p style="white-space: nowrap; padding: 0 10px 0 0; margin: 0"><strong>{selectedCount}</strong> {$maxFiles > 0 ? '/' + $maxFiles : ''} 
+          {!$compact ? lang('selected') : ''}</p>
+        {/if}
+        {#if $showSelection && !$compact}
+          <Selection on:deselect={deselect} bind:selectedFiles={selectedFiles}></Selection>
+        {/if}
+        <span style="flex-grow: 1"></span>
+        <DownloadFormats></DownloadFormats>
+        <button class="button" type="submit" disabled={!valid || isLoading} on:click={submit} >{lang('select')}</button>
+      </div>
+    </div>
     
-    <div class="pixxioFormats">
-      
-    </div>
-
-    <div class="buttonGroup buttonGroup--right">
-      <p><strong>{selectedCount}</strong> {$maxFiles > 0 ? '/' + $maxFiles : ''} {lang('selected')}</p>
-      {#if $showSelection}
-        <Selection on:deselect={deselect} bind:selectedFiles={selectedFiles}></Selection>
-      {/if}
-      <span style="flex-grow: 1"></span>
-      <DownloadFormats></DownloadFormats>
-      <button class="button" type="submit" disabled={!valid || isLoading} on:click={submit} >{lang('select')}</button>
-    </div>
     {:catch}
     error
   {/await}
@@ -265,7 +271,7 @@
       padding: 0 30px;
     }
     .buttonGroup {
-      padding: 0 30px;
+      padding: 20px 30px;
     }
 
     &__container {
@@ -281,7 +287,7 @@
         padding: 0;
       }
       .buttonGroup {
-        padding: 0;
+        padding: 20px 0;
       }
     }
   }
@@ -295,6 +301,22 @@
 
   .buttonGroup {
     margin-top: 0;
+  }
+
+  .compact{
+    .buttonGroup {
+      padding: 10px !important;
+      background: white;
+      position: absolute;
+      bottom: 3px;
+      left: 50%;
+      transform: translate(-50%, 0);
+      border-radius: 4px; 
+      max-width: 100%;
+      box-shadow: 0 0 3px rgba(0,0,0,0.25);
+      //border: 1px solid #ccc;
+
+    }
   }
 
   ul {

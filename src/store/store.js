@@ -10,4 +10,6 @@ export const isAuthenticated = writable(false);
 export const show = writable(false);
 export const mode = writable('get');
 export const uploadConfig = writable(null);
+export const askForProxy = writable(false);
+export const compact = writable(false);
 

@@ -1,9 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domain, appKey, refreshToken, modal } from './store/store';
+  import { domain, appKey, refreshToken, modal, askForProxy } from './store/store';
   import { API } from "./api";
   import Loading from "./Loading.svelte";
+  import axios from 'axios';
   
   const dispatch = createEventDispatcher();
   const api = new API();
@@ -13,12 +14,22 @@
   let hasError = false;
   let isLoading = false;
   let mediaspace = '';
+  let applicationKeyIsLocked = false;
+  let showAdvancedSettings = false;
+
+  let proxyInput = {
+    connectionString: '',
+    auth: {
+      username: '',
+      password: ''
+    }
+  }
 
   /**
    * check if there is a refreshToken in storage
    */
-  const token = sessionStorage.getItem('refreshToken');
-  mediaspace = sessionStorage.getItem('domain');
+  const token = localStorage.getItem('refreshToken');
+  mediaspace = localStorage.getItem('domain');
   if (mediaspace) {
     domain.update(() => mediaspace);
   }
@@ -32,38 +43,54 @@
     }).catch((e) => {
       refreshToken.update(() => '');
       isLoading = false;
+      applicationKeyIsLocked = e.errorcode === 15016
     })
   }
 
   const login = async () => {
-    isLoading = true;
-    hasError = false;
-    mediaspace = mediaspace.replace(/(http|https):\/\//, '').trim();
     try {
+      isLoading = true;
+      hasError = false;
+      mediaspace = mediaspace.replace(/(http|https):\/\//, '').trim();
       const formData = new FormData();
       formData.set('applicationKey', $appKey);
       formData.set('userNameOrEmail', username.trim());
       formData.set('password', password.trim());
+      let tempProxy = null;
 
-      const data = await fetch(`https://${mediaspace}/gobackend/login`, {
+      if (proxyInput.connectionString) {
+        const proxyParts = proxyInput.connectionString.split(':');
+        tempProxy = {
+          protocol: /^http/gi.test(proxyParts[0]) ? proxyParts[0] : 'http',
+          host: /^http/gi.test(proxyParts[0]) ? proxyParts[1].replace('//', '') : proxyParts[0].replace('//', ''),
+          port: (/^http/gi.test(proxyParts[0]) ? proxyParts[2] : proxyParts[1]) || '',
+          auth: proxyInput.auth
+        };
+        localStorage.setItem('proxy', JSON.stringify(tempProxy));
+      }
+
+      const response = await axios({
+        url: `https://${mediaspace}/gobackend/login`,
         method: 'POST',
-        body: formData
+        data: formData
       });
 
-      const response = await data.json();
+      
 
       isLoading = false;
 
-      if (!response.success) {
+
+
+      if (!response.data.success) {
         hasError = true;
-        throw new Error();
+        throw response.data;
       }
 
       // store refreshToken 
-      refreshToken.update(() => response.refreshToken);
+      refreshToken.update(() => response.data.refreshToken);
       domain.update(() => mediaspace);
-      sessionStorage.setItem('domain', mediaspace);
-      sessionStorage.setItem('refreshToken', response.refreshToken);
+      localStorage.setItem('domain', mediaspace);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
       
       api.callAccessToken().then(() => {
         dispatch('authenticated');
@@ -71,11 +98,9 @@
     } catch(error) {
       isLoading = false;
       hasError = true;
+      console.log(error)
+      applicationKeyIsLocked = error.errorcode === 15016
     }
-  }
-
-  const cancel = () => {
-    dispatch('cancel');
   }
 </script>
 
@@ -96,11 +121,32 @@
     <input bind:value={password} id="pixxio-password" disabled='{isLoading}' type="password" placeholder=" " />
     <label for="pixxio-password">{lang('password')}</label>
   </div>
-  {#if hasError}
+  {#if $askForProxy}
+    <small><a href="#" on:click={() => showAdvancedSettings = !showAdvancedSettings} class="advanced">{lang('advanced')}</a></small>
+    {#if showAdvancedSettings }
+    <br>
+    <br>
+    <div class="field">
+      <input bind:value={proxyInput.connectionString} id="pixxio-host" disabled='{isLoading}' type="text" placeholder=" " />
+      <label for="pixxio-host">{lang('proxy_connection_string')}</label>
+    </div>
+    <div class="field">
+      <input bind:value={proxyInput.auth.username} id="pixxio-auth-username" disabled='{isLoading}' type="text" placeholder=" " />
+      <label for="pixxio-auth-username">{lang('proxy_auth_username')}</label>
+    </div>
+    <div class="field">
+      <input bind:value={proxyInput.auth.password} id="pixxio-auth-password" disabled='{isLoading}' type="password" placeholder=" " />
+      <label for="pixxio-auth-password">{lang('proxy_auth_password')}</label>
+    </div>
+    {/if}
+  {/if}
+  {#if hasError && !applicationKeyIsLocked}
   <small class="error">{lang('signin_error')}</small>
   {/if}
-  <div class="buttonGroup">
-    <button class="button button--secondary" on:click={cancel}>{lang('cancel')}</button>
+  {#if hasError && applicationKeyIsLocked}
+  <small class="error">{lang('application_key_error')}</small>
+  {/if}
+  <div class="buttonGroup buttonGroup--fullSize">
     <button class="button" type="submit" disabled='{isLoading}' on:click={login}>{lang('signin')}</button>
   </div>
   {#if isLoading}
@@ -116,6 +162,9 @@
   @import './styles/button';
 
   h2 {
+    margin: 0 0 0.5em;
+  }
+  p {
     margin: 0 0 1em;
   }
   .fields {
@@ -129,12 +178,17 @@
 
     .error {
       color: red;
+      line-height: 1.3em;
       font-size: 12px;
     }
 
     &.no-modal {
       padding: 0;
       max-width: 300px;
+    }
+
+    a.advanced {
+      color: $primary;
     }
   }
   

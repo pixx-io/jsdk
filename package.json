@@ -1,7 +1,7 @@
 {
   "name": "@pixx.io/jsdk",
   "title": "pixx.io JSDK",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "main": "build/esm/index.js",
   "module": "build/esm/index.js",
   "scripts": {
@@ -34,6 +34,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.24.0"
+    "axios": "^0.24.0",
+    "http-proxy": "^1.18.1",
+    "https-proxy-agent": "^5.0.0"
   }
 }

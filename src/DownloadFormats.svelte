@@ -92,9 +92,10 @@
   @import './styles/fields';
 
   select {
-    min-width: 200px;
+    min-width: 10px;
   }
   .downloadFormats {
     margin-right: 10px;
+    min-width: 10px;
   }
 </style>

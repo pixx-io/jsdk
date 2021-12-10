@@ -1,8 +1,8 @@
 import { get } from 'svelte/store';
 import { API } from './api';
 import App from './App.svelte';
-import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields } from './store/media';
-import { domain, language, appKey, modal, show, isAuthenticated, mode } from './store/store';
+import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields, showFileName, showFileType, showFileSize } from './store/media';
+import { domain, language, appKey, modal, show, isAuthenticated, mode, refreshToken, askForProxy, compact } from './store/store';
 
 class PIXXIO {
 	constructor(config = {}, lang = 'en') {
@@ -23,6 +23,8 @@ class PIXXIO {
 		domain.update(() => config?.appUrl || '');
 		appKey.update(() => config?.appKey || '');
 		modal.update(() => config?.modal);
+		askForProxy.update(() => !!config?.askForProxy);
+		compact.update(() => config?.compact || false);
 	}
 	boot() {
 		if (!this.config.element) {
@@ -46,7 +48,11 @@ class PIXXIO {
 		allowFormats.update(() => config?.allowFormats || null);
 		maxFiles.update(() => config?.max > 0 ? (config?.max || 0) : 0);
 		additionalResponseFields.update(() => config?.additionalResponseFields || []);
-
+		showFileName.update(() => config?.showFileName || false);
+		showFileType.update(() => config?.showFileType || true);
+		showFileSize.update(() => config?.showFileSize || true);
+		
+	
 		const calledTime = Date.now();
 		changed.update(() => calledTime);
 		mode.update(() => 'get');
@@ -132,7 +138,8 @@ class PIXXIO {
 								"isMainVersion",
 								"mainVersion",
 								"mainVersionOriginalFileURL",
-								"mainVersionFileName"
+								"mainVersionFileName",
+								"mainVersionFileSize"
 							]
 						};
 						const data = await api.get(`/files/existence`, _options);
@@ -153,6 +160,23 @@ class PIXXIO {
 				}
 			}
 		})
+	}
+
+	forceLogout = () => {
+		localStorage.removeItem('refreshToken');
+		localStorage.removeItem('domain');
+		localStorage.removeItem('proxy');
+		isAuthenticated.update(() => false);
+		domain.update(() => '');
+		refreshToken.update(() => '');
+	}
+
+	getProxyConfiguration() {
+		const proxyStettings = localStorage.getItem('proxy');
+		if (proxyStettings) {
+			return JSON.parse(proxyStettings);
+		}
+		return null;
 	}
 
 	getFileById(id, options) {

@@ -8,6 +8,11 @@
   &--right {
     justify-content: flex-end;
   }
+  &--fullSize {
+    .button {
+      flex: 1;
+    }
+  }
 }
 .button {
   padding: 0 16px;

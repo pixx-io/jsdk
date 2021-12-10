@@ -5,7 +5,7 @@
 	import Files from './Files.svelte';
 	import User from './User.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import { domain, appKey, modal, refreshToken, language, isAuthenticated, mode, show } from './store/store';
+	import { domain, appKey, modal, refreshToken, language, isAuthenticated, mode, show, compact } from './store/store';
 	import Upload from './Upload.svelte';
 
 	/* Props */
@@ -21,8 +21,8 @@
 	}
 
 	const logout = () => {
-		sessionStorage.removeItem('refreshToken');
-		sessionStorage.removeItem('domain');
+		localStorage.removeItem('refreshToken');
+		localStorage.removeItem('domain');
 		isAuthenticated.update(() => false);
 		domain.update(() => '');
 		refreshToken.update(() => '');
@@ -44,10 +44,12 @@
 	}
 </script>
 {#if $show}
-<main class:no-modal={!$modal}>
+<main class:no-modal={!$modal} class:compact={$compact}>
 	<div class="container" class:container--enlarge={$isAuthenticated}>
 		<header>
+			{#if !$compact}
 			<Logo></Logo>
+			{/if}
 			{#if $isAuthenticated && $mode == 'get'}
 				<SearchField bind:value={searchQuery}></SearchField>
 			{/if}
@@ -73,7 +75,7 @@
 			<Upload bind:config={uploadConfig} on:uploaded={uploaded} on:error={uploadError}></Upload>
 		</section>
 		{/if}
-		{#if $isAuthenticated}
+		{#if $isAuthenticated && !$compact}
 			<User on:logout={logout}></User>
 		{/if}
 	</div>
@@ -188,7 +190,7 @@
 			right: auto;
 			bottom: auto;
 			background: transparent;
-			padding: 20px;
+			padding: 10px;
 			header {
 				padding: 0;
 			}

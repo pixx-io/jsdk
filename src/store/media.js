@@ -8,3 +8,6 @@ export const allowFormats = writable(null);
 export const changed = writable(1);
 export const maxFiles = writable(0);
 export const additionalResponseFields = writable([]);
+export const showFileName = writable(false);
+export const showFileType = writable(true);
+export const showFileSize = writable(true);
