@@ -145,10 +145,6 @@
 			margin-top: 4px;
 			margin-bottom: 20px;
 			padding: 0 30px;
-
-      .searchField {
-        flex: 1;
-      }
 		}
 
 		a {
