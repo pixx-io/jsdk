@@ -106,9 +106,7 @@
 
 	a.close {
 		display: block;
-		position: absolute;
-		top: 15px;
-		right: 15px;
+		position: relative;
 		width: 30px;
 		height: 30px;
 		&:after,
@@ -142,9 +140,15 @@
 
 		header {
 			display: flex;
+      flex-direction: row;
 			align-items: center;
+			margin-top: 4px;
 			margin-bottom: 20px;
 			padding: 0 30px;
+
+      .searchField {
+        flex: 1;
+      }
 		}
 
 		a {
@@ -196,6 +200,7 @@
 			}
 
 			a.close {
+        position: relative;
 				top: 0;
 				right: 0;
 			}
