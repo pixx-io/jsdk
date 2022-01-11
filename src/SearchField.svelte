@@ -24,5 +24,9 @@
 <style type="text/scss" >
 	@import './styles/variables';
   @import './styles/fields';
+
+  .searchField {
+    flex: 1;
+  }
   
 </style>
