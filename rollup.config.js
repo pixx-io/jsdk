@@ -5,6 +5,7 @@ import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
 import preprocess from 'svelte-preprocess';
+import replace from '@rollup/plugin-replace';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -48,6 +49,11 @@ export default [{
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
 		css({ output: 'index.css' }),
+
+    // this is neccessary fot tippy.js
+    replace({
+      'process.env.NODE_ENV': production ? JSON.stringify('production') : JSON.stringify('development'),
+    }),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
@@ -101,6 +107,11 @@ export default [{
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
 		css({ output: 'pixxio.jsdk.css' }),
+
+    // this is neccessary fot tippy.js
+    replace({
+      'process.env.NODE_ENV': production ? JSON.stringify('production') : JSON.stringify('development'),
+    }),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
