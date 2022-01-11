@@ -102,6 +102,12 @@
       applicationKeyIsLocked = error.errorcode === 15016
     }
   }
+
+  const handleKeydown = (event) => {
+    if (event.key === 'Enter') {
+      login();
+    }
+  }
 </script>
 
 <div class="login fields" class:no-modal="{!$modal}">
@@ -109,16 +115,16 @@
   <p>{lang('signin_description')}</p>
   {#if !$domain}
   <div class="field">
-    <input bind:value={mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " />
+    <input bind:value={mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " on:keydown={handleKeydown} />
     <label for="pixxio-mediaspace">{lang('mediaspace')}</label>
   </div>
   {/if}
   <div class="field">
-    <input bind:value={username} id="pixxio-username" disabled='{isLoading}' type="text" placeholder=" " />
+    <input bind:value={username} id="pixxio-username" disabled='{isLoading}' type="text" placeholder=" " on:keydown={handleKeydown} />
     <label for="pixxio-username">{lang('username')}</label>
   </div>
   <div class="field">
-    <input bind:value={password} id="pixxio-password" disabled='{isLoading}' type="password" placeholder=" " />
+    <input bind:value={password} id="pixxio-password" disabled='{isLoading}' type="password" placeholder=" " on:keydown={handleKeydown} />
     <label for="pixxio-password">{lang('password')}</label>
   </div>
   {#if $askForProxy}
