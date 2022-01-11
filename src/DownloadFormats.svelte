@@ -1,5 +1,5 @@
 <script>
-  import { afterUpdate, beforeUpdate, createEventDispatcher, onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { API } from "./api";
   import { format } from "./store/media";
   import { lang } from "./translation";
@@ -58,7 +58,7 @@
         throw new Error(data.errormessage)
       }
 
-      formats = data.downloadFormats.filter((format => allowedFormats === null || ($allowFormats !== null && allowedFormats.includes(format.id))));
+      formats = data.downloadFormats.filter((format => allowFormats === null || ($allowFormats !== null && allowFormats.includes(format.id))));
       isLoading = false;
     } catch(e) {
       hasError = true;
@@ -96,6 +96,6 @@
   }
   .downloadFormats {
     margin-right: 10px;
-    min-width: 10px;
+    min-width: 120px;
   }
 </style>

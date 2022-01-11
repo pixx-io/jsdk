@@ -51,9 +51,9 @@ class PIXXIO {
 		allowFormats.update(() => config?.allowFormats || null);
 		maxFiles.update(() => config?.max > 0 ? (config?.max || 0) : 0);
 		additionalResponseFields.update(() => config?.additionalResponseFields || []);
-		showFileName.update(() => config?.showFileName || false);
-		showFileType.update(() => config?.showFileType || true);
-		showFileSize.update(() => config?.showFileSize || true);
+		showFileName.update(() => typeof config?.showFileName === 'boolean' ? config?.showFileName : false);
+		showFileType.update(() => typeof config?.showFileType === 'boolean' ? config?.showFileType : true);
+		showFileSize.update(() => typeof config?.showFileSize === 'boolean' ? config?.showFileSize : true);
 		
 	
 		const calledTime = Date.now();
