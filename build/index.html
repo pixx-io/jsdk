@@ -42,8 +42,9 @@
 				max: -1, 
 				allowTypes: ['jpg', 'png'],
 				showSelection: false,
-				showFileName: true,
-				showFileType: true
+				showFileName: false,
+				showFileType: true,
+				showFileSize: false
 				// allowedFormats: ['preview']
 			 }).then((selectedFiles) => {
 				selectedFiles.forEach(f => setImage(f));

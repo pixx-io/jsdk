@@ -51,9 +51,9 @@ class PIXXIO {
 		allowFormats.update(() => config?.allowFormats || null);
 		maxFiles.update(() => config?.max > 0 ? (config?.max || 0) : 0);
 		additionalResponseFields.update(() => config?.additionalResponseFields || []);
-		showFileName.update(() => typeof config?.showFileName === 'boolean' ? config?.showFileName : false);
-		showFileType.update(() => typeof config?.showFileType === 'boolean' ? config?.showFileType : true);
-		showFileSize.update(() => typeof config?.showFileSize === 'boolean' ? config?.showFileSize : true);
+		showFileName.update(() => config?.showFileName);
+		showFileType.update(() => config?.showFileType);
+		showFileSize.update(() => config?.showFileSize);
 		
 	
 		const calledTime = Date.now();
@@ -223,6 +223,8 @@ class PIXXIO {
 	}
 }
 
-window.PIXXIO = PIXXIO
+if (typeof window !== 'undefined') {
+	window.PIXXIO = PIXXIO;
+}
 
 export default PIXXIO;

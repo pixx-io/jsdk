@@ -69,8 +69,8 @@ p.getMedia({
 - `allowTypes`: define the file extensions which are allowed to select. For example `['jpg', 'png']` default: `[]`
 - `allowFormats`: define download formats which are allowed to select. For original or preview use the keys: `preview`, `original` the other system configured formats can be defined by id. So for example `['preview', 123, 321]` default: `null`
 - `additionalResponseFields`: is an array of responseFields. the possible fields are described in the official pixx.io API.
-- `showFileType`: shows the file type as tag in the file list. default `true`
-- `showFileSize`: shows the file size as tag in the file list. default `true`
+- `showFileType`: shows the file type as tag in the file list. default `false`
+- `showFileSize`: shows the file size as tag in the file list. default `false`
 - `showFileName`: shows the file name under the file item as caption. default `false`
 
 #### Returns
