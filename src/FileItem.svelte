@@ -1,9 +1,21 @@
 <script>
+  // TIPPY
+  import tippy from 'tippy.js';
+
   import { createEventDispatcher } from "svelte";
   import { showFileSize, showFileType, showFileName, maxFiles } from './store/media';
 
   export let file = null;
   export let selected = false;
+
+  const itemID = 'fileItem_' + Math.ceil(new Date().getTime() * Math.random());
+
+  $: if (file) {
+    tippy('#' + itemID, {
+      content: file.fileName,
+      arrow: false
+    });
+  }
 
   const dispatch = createEventDispatcher();
   let lastClick = 0;
@@ -54,7 +66,7 @@
 </script>
 
 {#if file}
-<li on:click={() => clickProvider()}  title={file.fileName}>
+<li on:click={() => clickProvider()}>
   <figure>
     <div class="pixxioSquare" class:pixxioSquare--active={file.selected}>
       <img loading="lazy" src={file.imagePath || file.modifiedPreviewFileURLs[0]} alt={file.fileName}>
@@ -68,7 +80,7 @@
       </div>
     </div>
     {#if $showFileName}
-    <figcaption>
+    <figcaption id={itemID}>
       {file.fileName}
     </figcaption>
     {/if}

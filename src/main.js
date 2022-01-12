@@ -4,6 +4,9 @@ import App from './App.svelte';
 import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields, showFileName, showFileType, showFileSize } from './store/media';
 import { domain, language, appKey, modal, show, isAuthenticated, mode, refreshToken, askForProxy, compact } from './store/store';
 
+// Tippy styles
+import 'tippy.js/dist/tippy.css';
+
 class PIXXIO {
 	constructor(config = {}, lang = 'en') {
 		this.config = config;

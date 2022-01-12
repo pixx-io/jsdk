@@ -112,7 +112,7 @@ export class API {
               case 15008:  // API v2
                 // get new access Token and retry request
                 this.callAccessToken().then(() => {
-                  this.call(method, path, parameters).subscribe((newData) => {
+                  this.call(method, path, parameters, useAccessToken, additionalHeaders, setDefaultHeader, useURLSearchParams).subscribe((newData) => {
                     resolve(newData);
                   });
                 });
