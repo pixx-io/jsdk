@@ -223,6 +223,8 @@ class PIXXIO {
 	}
 }
 
-window.PIXXIO = PIXXIO
+if (typeof window !== 'undefined') {
+	window.PIXXIO = PIXXIO;
+}
 
 export default PIXXIO;
