@@ -1,7 +1,7 @@
 {
   "name": "@pixx.io/jsdk",
   "title": "pixx.io JSDK",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "main": "build/esm/index.js",
   "module": "build/esm/index.js",
   "scripts": {
