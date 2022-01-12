@@ -2,19 +2,17 @@
   // TIPPY
   import tippy from 'tippy.js';
 
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onDestroy } from "svelte";
   import { showFileSize, showFileType, showFileName, maxFiles } from './store/media';
 
   export let file = null;
   export let selected = false;
 
-  const itemID = 'fileItem_' + Math.ceil(new Date().getTime() * Math.random());
+  let tooltipElement = null;
+  let tippyInstance = null;
 
   $: if (file) {
-    tippy('#' + itemID, {
-      content: file.fileName,
-      arrow: false
-    });
+    createTippy();
   }
 
   const dispatch = createEventDispatcher();
@@ -63,6 +61,24 @@
 
     return Math.ceil(size) + ' B';
   }
+
+  const createTippy = () => {
+    if (tooltipElement) {
+      destroyTippy();
+      tippyInstance = tippy(tooltipElement, {
+        content: file.fileName,
+        arrow: false
+      });
+    }
+  };
+
+  const destroyTippy = () => {
+    if (tippyInstance) {
+      tippyInstance.destroy();
+    }
+  }
+
+  onDestroy(() => destroyTippy());
 </script>
 
 {#if file}
@@ -80,7 +96,7 @@
       </div>
     </div>
     {#if $showFileName}
-    <figcaption id={itemID}>
+    <figcaption bind:this={tooltipElement}>
       {file.fileName}
     </figcaption>
     {/if}
