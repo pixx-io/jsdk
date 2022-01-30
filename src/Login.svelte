@@ -1,10 +1,11 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domain, appKey, refreshToken, modal, askForProxy } from './store/store';
+  import { domain, appKey, refreshToken, modal, askForProxy} from './store/store';
   import { API } from "./api";
   import Loading from "./Loading.svelte";
   import axios from 'axios';
+  import { get } from "svelte/store";
   
   const dispatch = createEventDispatcher();
   const api = new API();
@@ -13,7 +14,7 @@
   let password = '';
   let hasError = false;
   let isLoading = false;
-  let mediaspace = '';
+  let mediaspace = get(domain);
   let applicationKeyIsLocked = false;
   let showAdvancedSettings = false;
 
@@ -29,9 +30,9 @@
    * check if there is a refreshToken in storage
    */
   const token = localStorage.getItem('refreshToken');
-  mediaspace = localStorage.getItem('domain');
-  if (mediaspace) {
-    domain.update(() => mediaspace);
+  const localStorageMediaSpace = localStorage.getItem('domain');
+  if (localStorageMediaSpace) {
+    domain.update(() => localStorageMediaSpace);
   }
   if(token && ($domain || mediaspace)) {
     isLoading = true;
@@ -51,6 +52,7 @@
     try {
       isLoading = true;
       hasError = false;
+      console.error('in')
       mediaspace = mediaspace.replace(/(http|https):\/\//, '').trim();
       const formData = new FormData();
       formData.set('applicationKey', $appKey);
