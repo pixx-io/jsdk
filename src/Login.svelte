@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domain, appKey, refreshToken, modal, askForProxy} from './store/store';
+  import { domain, appKey, refreshToken, modal, askForProxy } from './store/store';
   import { API } from "./api";
   import Loading from "./Loading.svelte";
   import axios from 'axios';
@@ -52,7 +52,6 @@
     try {
       isLoading = true;
       hasError = false;
-      console.error('in')
       mediaspace = mediaspace.replace(/(http|https):\/\//, '').trim();
       const formData = new FormData();
       formData.set('applicationKey', $appKey);
