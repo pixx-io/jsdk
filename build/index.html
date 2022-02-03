@@ -73,7 +73,7 @@
 			p.pushMedia({ 
 				file: file,
 			}).then((response) => {
-				console.log(response)
+				console.log('pushMedia response: ', response)
 			}).catch(() => {
 		
 			});
@@ -81,14 +81,13 @@
 
 		p.on('authState', function (value) {
 			console.log('LOGIN ', value);
-			if (value.login) {
+			/*if (value.login) {
 				p.getFileById(5185).then((data) => console.log(data));
 				p.bulkMainVersionCheck([5530,5520,5498,5496,5515,5524,5525,5514,5517,5521,5516]).then(response => {
 					console.log(response);
 				})
 				console.log(p.getProxyConfiguration());
-			}
-
+			}*/
 		})
 
 	</script>
