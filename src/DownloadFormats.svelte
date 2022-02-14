@@ -1,11 +1,10 @@
 <script>
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { API } from "./api";
   import { format } from "./store/media";
   import { lang } from "./translation";
   import { allowFormats } from './store/media';
 
-  const dispatch = createEventDispatcher();
   const api = new API();
   let selected;
 
@@ -13,34 +12,37 @@
   let hasError = false;
   let isLoading = false;
 
-  let showOriginal = $allowFormats === null || ($allowFormats !== null && $allowFormats.includes('original'));
-  let showPreview = $allowFormats === null || ($allowFormats !== null && $allowFormats.includes('preview'));
+  let showOriginal = false;
+  let showPreview = false;
+  let hideDropdown = true;
 
-  $: hideDropdown = ($allowFormats || []).length === 1;
-
-  $: $allowFormats,changes();
+  $: {
+    $allowFormats;
+    hideDropdown = ($allowFormats || []).length === 1;
+    showOriginal = $allowFormats === null || ($allowFormats !== null && $allowFormats.includes('original'));
+    showPreview = $allowFormats === null || ($allowFormats !== null && $allowFormats.includes('preview'));
+    changes();
+  }
   
 
   onMount(() => {
-    if($allowFormats && $allowFormats.length === 1) {
-      selected = $allowFormats[0];
-      format.update(() => $allowFormats[0]);
-      hideDropdown = true;
-    } else {
-      fetchDownloadFormats();
-      select();
-    }
+    changes();
   });
 
   const changes = () => {
+    const downloadFormatIDs = ($allowFormats && $allowFormats.length) ? $allowFormats.filter(format => format !== 'original' && format !== 'preview') : [];
+
+    if (downloadFormatIDs.length) {
+      fetchDownloadFormats();
+    } else {
+      formats = [];
+    }
+
     if($allowFormats && $allowFormats.length === 1) {
       selected = $allowFormats[0];
-      format.update(() => $allowFormats[0]);
-      hideDropdown = true;
-    } else {
-      fetchDownloadFormats();
-      select();
     }
+    
+    select();
   };
 
   const select = () => {
@@ -58,7 +60,7 @@
         throw new Error(data.errormessage)
       }
 
-      formats = data.downloadFormats.filter((format => allowFormats === null || ($allowFormats !== null && allowFormats.includes(format.id))));
+      formats = data.downloadFormats.filter((format => allowFormats === null || ($allowFormats !== null && $allowFormats.includes(format.id))));
       isLoading = false;
     } catch(e) {
       hasError = true;
