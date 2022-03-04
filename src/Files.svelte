@@ -205,6 +205,7 @@
   }
 
   const submit = async () => {
+    console.log('=> submit downloadFormat: ', downloadFormat);
     const preparedFiles = [];
     isLoading = true;
     for (let i = 0; i < selectedFiles.length; i += 1) {
