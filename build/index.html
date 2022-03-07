@@ -44,8 +44,8 @@
 				showSelection: false,
 				showFileName: false,
 				showFileType: true,
-				showFileSize: false
-				// allowedFormats: ['preview']
+				showFileSize: false,
+				allowFormats: ['preview', 'original', 1]
 			 }).then((selectedFiles) => {
 				selectedFiles.forEach(f => setImage(f));
 			}).catch(() => {
