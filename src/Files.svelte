@@ -179,7 +179,7 @@
     });
   }
 
-  const fetchDownloadFormats = async (id) => {
+  const convertFile = async (id, downloadFormat) => {
     let finishedWebsocketEvents = [];
     let downloadJobID = null;
     
@@ -210,12 +210,20 @@
           });
         } catch (error) {}
       };
-      
-      api.get('/files/convert', {
+
+      const convertOptions = {
         ids: [id],
-        downloadType: 'downloadFormat',
-        downloadFormatID: downloadFormat
-      }).then((convertResponse) => {
+        applyMetadata: true
+      };
+
+      if (['preview', 'original'].includes(downloadFormat)) {
+        convertOptions.downloadType = downloadFormat;
+      } else {
+        convertOptions.downloadType = 'downloadFormat';
+        convertOptions.downloadFormatID = downloadFormat;
+      }
+
+      api.get('/files/convert', convertOptions).then((convertResponse) => {
         downloadJobID = convertResponse.jobID;
         const foundWebsocketEvent = finishedWebsocketEvents.find((finishedEvent) => finishedEvent.jobID === downloadJobID);
         if (foundWebsocketEvent) {
@@ -234,13 +242,8 @@
     isLoading = true;
     for (let i = 0; i < selectedFiles.length; i += 1) {
       const file = selectedFiles[i];
-      let url = downloadFormat === 'preview' ? file.previewFileURL : file.originalFileURL;
       const thumbnail = file.modifiedPreviewFileURLs[0];
-
-      if (!['preview', 'original'].includes(downloadFormat)) {
-        // catch format
-        url = await fetchDownloadFormats(file.id);
-      }
+      const url = await convertFile(file.id, downloadFormat);
 
       preparedFiles.push({
         id: file.id,
