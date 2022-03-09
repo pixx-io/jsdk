@@ -5,7 +5,7 @@
   import { createEventDispatcher } from "svelte";
   import Error from './Error.svelte';
   import { lang } from './translation';
-  import { modal, domain, accessToken } from './store/store';
+  import { modal, websocket } from './store/store';
   const api = new API();
   let loading = false;
   export let config = {};
@@ -24,11 +24,8 @@
 
       let uploadJobID = null;
       let finishedWebsocketEvents = [];
-      const websocketUrl = 'wss://' + $domain.replace(/^(http|https):\/\//, '') + '/gobackend/ws?accessToken=' + $accessToken;
-      const socket = new WebSocket(websocketUrl);
 
       const onFoundWebsocketEvent = (returnData) => {
-        socket.close();
         uploadJobID = null;
         finishedWebsocketEvents = [];
 
@@ -36,7 +33,7 @@
         return returnData;
       };
 
-      socket.onmessage = (event) => {
+      $websocket.onmessage = (event) => {
         try {
           const lines = event.data.split("\n");
           lines.forEach(line => {
