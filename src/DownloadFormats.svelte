@@ -4,6 +4,7 @@
   import { format } from "./store/media";
   import { lang } from "./translation";
   import { allowFormats } from './store/media';
+  import Select from 'svelte-select';
 
   const api = new API();
   let selected;
@@ -29,24 +30,40 @@
     changes();
   });
 
-  const changes = () => {
+  const changes = async () => {
     const downloadFormatIDs = ($allowFormats && $allowFormats.length) ? $allowFormats.filter(format => format !== 'original' && format !== 'preview') : [];
 
     if (downloadFormatIDs.length) {
-      fetchDownloadFormats();
+      await fetchDownloadFormats();
     } else {
       formats = [];
     }
 
+    if (showPreview) {
+      formats.unshift({
+        id: 'preview',
+        name: lang('preview')
+      });
+    }
+
+    if (showOriginal) {
+      formats.unshift({
+        id: 'original',
+        name: lang('original')
+      });
+    }
+
     if($allowFormats && $allowFormats.length === 1) {
-      selected = $allowFormats[0];
+      selected = formats.find((format) => format.id === $allowFormats[0]);
+    } else {
+      selected = formats[0];
     }
     
     select();
   };
 
   const select = () => {
-    format.update(() => selected);
+    format.update(() => selected.id);
   }
 
   const fetchDownloadFormats = async () => {
@@ -73,18 +90,21 @@
 {#if !hideDropdown}
 <div class="downloadFormats fields">
   <div class="field">
-    <select bind:value={selected} on:blur={select} name="" id="pixxioDownloadFormats__dropdown" placeholder=" ">
-      {#if showPreview}
-      <option value="preview">{lang('preview')}</option>
-      {/if}
-      {#if showOriginal}
-      <option value="original">{lang('original')}</option>
-      {/if}
-      {#each formats as format}
-      <option value={format.id}>{format.name}</option>
-      {/each}
-    </select>
-    <label for="pixxioDownloadFormats__dropdown">{lang('please_select')}</label>
+    <Select
+      id = 'pixxioDownloadFormats__dropdown'
+      items = {formats}
+      bind:value = {selected} 
+      on:select={select}
+      isClearable = {false}
+      isSearchable = {false}
+      listPlacement = 'top'
+      showIndicator = {true}
+      optionIdentifier = 'id'
+      labelIdentifier = 'name'
+      containerClasses = 'customSelect'
+      isWaiting = {isLoading}
+      listAutoWidth = {true}
+    ></Select>
   </div>
 </div>
 {/if}
@@ -99,5 +119,21 @@
   .downloadFormats {
     margin-right: 10px;
     min-width: 120px;
+
+    .field {
+      flex-direction: column;
+    }
+  }
+
+
+  // override Select-styles to make the listContainer's width fit its content
+  // should be handled by Select-attribute "listAutoWidth" but this attribute does not seem to work properly
+  :global(.customSelect) {
+    max-width: 140px;
+    --height: 34px;
+    --indicatorTop: 6px;
+  }
+  :global(.customSelect .listContainer) {
+    width: fit-content !important;
   }
 </style>

@@ -44,8 +44,8 @@
 				showSelection: false,
 				showFileName: false,
 				showFileType: true,
-				showFileSize: false
-				// allowedFormats: ['preview']
+				showFileSize: false,
+				//allowFormats: ['preview']
 			 }).then((selectedFiles) => {
 				selectedFiles.forEach(f => setImage(f));
 			}).catch(() => {
@@ -59,7 +59,7 @@
 			p.getMedia({ 
 				max: 1, 
 				allowTypes: ['psd'],
-			  allowFormats: ['preview']
+			  allowFormats: ['preview', 'original', 3]
 			 }).then((selectedFiles) => {
 				selectedFiles.forEach(f => setImage(f));
 			}).catch(() => {
