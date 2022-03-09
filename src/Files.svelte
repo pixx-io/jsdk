@@ -107,6 +107,7 @@
           "userID",
           "fileSize",
           "dominantColor",
+          "subject",
           ...$additionalResponseFields
         ],
         previewFileOptions: [

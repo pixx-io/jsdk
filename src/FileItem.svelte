@@ -3,7 +3,7 @@
   import tippy from 'tippy.js';
 
   import { createEventDispatcher, onDestroy } from "svelte";
-  import { showFileSize, showFileType, showFileName, maxFiles } from './store/media';
+  import { showFileSize, showFileType, showFileName, maxFiles, showSubject } from './store/media';
 
   export let file = null;
   export let selected = false;
@@ -98,6 +98,11 @@
     {#if $showFileName}
     <figcaption bind:this={tooltipElement}>
       {file.fileName}
+    </figcaption>
+    {/if}
+    {#if $showSubject}
+    <figcaption bind:this={tooltipElement}>
+      {file.subject}
     </figcaption>
     {/if}
   </figure>

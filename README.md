@@ -71,6 +71,7 @@ p.getMedia({
 - `additionalResponseFields`: is an array of responseFields. the possible fields are described in the official pixx.io API.
 - `showFileType`: shows the file type as tag in the file list. default `false`
 - `showFileSize`: shows the file size as tag in the file list. default `false`
+- `showSubject`: shows the subject under the file item as caption. default `true`
 - `showFileName`: shows the file name under the file item as caption. default `false`
 
 #### Returns

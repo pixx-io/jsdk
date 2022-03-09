@@ -1,7 +1,8 @@
 import { get } from 'svelte/store';
 import { API } from './api';
+import { HELPER } from './helper';
 import App from './App.svelte';
-import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields, showFileName, showFileType, showFileSize } from './store/media';
+import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields, showFileName, showFileType, showFileSize, showSubject } from './store/media';
 import { domain, language, appKey, modal, show, isAuthenticated, mode, refreshToken, askForProxy, compact } from './store/store';
 
 // Tippy styles
@@ -47,14 +48,28 @@ class PIXXIO {
 		show.update(() => false);
 	}
 	getMedia(config) {
+    const helper = new HELPER();
+  
 		allowTypes.update(() => config?.allowTypes || []);
 		allowFormats.update(() => config?.allowFormats || null);
 		maxFiles.update(() => config?.max > 0 ? (config?.max || 0) : 0);
 		additionalResponseFields.update(() => config?.additionalResponseFields || []);
-		showFileName.update(() => config?.showFileName);
-		showFileType.update(() => config?.showFileType);
-		showFileSize.update(() => config?.showFileSize);
-		
+    
+    if (helper.isBoolean(config?.showFileName)) {
+		  showFileName.update(() => config?.showFileName);
+    }
+    
+    if (helper.isBoolean(config?.showFileType)) {
+		  showFileType.update(() => config?.showFileType);
+    }
+    
+    if (helper.isBoolean(config?.showFileSize)) {
+      showFileSize.update(() => config?.showFileSize);
+    }
+
+    if (helper.isBoolean(config?.showSubject)) {
+      showSubject.update(() => config?.showSubject);
+    }
 	
 		const calledTime = Date.now();
 		changed.update(() => calledTime);
