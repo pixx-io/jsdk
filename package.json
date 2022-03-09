@@ -39,6 +39,7 @@
     "axios": "^0.24.0",
     "http-proxy": "^1.18.1",
     "https-proxy-agent": "^5.0.0",
+    "svelte-select": "^4.4.7",
     "tippy.js": "^6.3.7"
   }
 }
