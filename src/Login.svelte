@@ -5,6 +5,7 @@
   import { API } from "./api";
   import Loading from "./Loading.svelte";
   import axios from 'axios';
+  import { get } from "svelte/store"; 
   
   const dispatch = createEventDispatcher();
   const api = new API();
@@ -13,7 +14,7 @@
   let password = '';
   let hasError = false;
   let isLoading = false;
-  let mediaspace = '';
+  let mediaspace = get('domain');
   let applicationKeyIsLocked = false;
   let showAdvancedSettings = false;
 
@@ -29,9 +30,9 @@
    * check if there is a refreshToken in storage
    */
   const token = localStorage.getItem('refreshToken');
-  mediaspace = localStorage.getItem('domain');
-  if (mediaspace) {
-    domain.update(() => mediaspace);
+  const localStoreMediaSpace = localStorage.getItem('domain');
+  if (localStoreMediaSpace) {
+    domain.update(() => localStoreMediaSpace);
   }
   if(token && ($domain || mediaspace)) {
     isLoading = true;
@@ -75,11 +76,7 @@
         data: formData
       });
 
-      
-
       isLoading = false;
-
-
 
       if (!response.data.success) {
         hasError = true;
