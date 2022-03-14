@@ -1,10 +1,10 @@
 <script>
-  import { afterUpdate, beforeUpdate, createEventDispatcher, onMount } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import DownloadFormats from "./DownloadFormats.svelte";
   import Selection from "./Selection.svelte";
   import FileItem from "./FileItem.svelte";
   import Loading from './Loading.svelte';
-  import { modal, compact } from './store/store';
+  import { modal, compact, websocket } from './store/store';
   import { searchTerm, format, maxFiles, showSelection, allowTypes, additionalResponseFields, changed } from './store/media';
   import {API} from './api'
   import { lang } from './translation';
@@ -42,7 +42,6 @@
     fetchFiles();
   };
 
-
   const lazyLoad = (event) => {
       if (isLoading || files.length >= quantity) { return; }
       const delta = event.target.scrollHeight - event.target.scrollTop- event.target.offsetHeight;
@@ -54,7 +53,6 @@
   }
 
   const fetchFiles = async (attach) => {
-
     try {
       isLoading = true;
       let allowedTypeFilter = [];
@@ -181,27 +179,62 @@
     });
   }
 
-  const fetchDownloadFormats = async (id) => {
-    const convert = await api.get('/files/convert', {
-      ids: [id],
-      downloadType: 'downloadFormat',
-      downloadFormatID: downloadFormat
-    })
+  const convertFile = async (id, downloadFormat) => {
+    let finishedWebsocketEvents = [];
+    let downloadJobID = null;
+    
+    return new Promise((resolve, reject) => {
+      const onFoundWebsocketEvent = (returnData) => {
+        downloadJobID = null;
+        finishedWebsocketEvents = [];
 
-    const checkDownload = async () => {
-      const download = await api.get('/files/download', {
-        downloadID: convert.downloadID
-      });
-      if (!download.downloadURL) {        
-        return await new Promise((resolve) => {
-          setTimeout(() => checkDownload().then((result) => resolve(result)), 100);
-        });
+        resolve(returnData.jobData.downloadURL);
+      };
+
+      $websocket.onmessage = (event) => {
+        try {
+          const lines = event.data.split("\n");
+          lines.forEach(line => {
+            let eventData = JSON.parse(line);
+            if (eventData.type === 'finishedJob') {
+              finishedWebsocketEvents.push(eventData);
+
+              if (downloadJobID && eventData.jobID === downloadJobID) {
+                const returnData = {
+                  success: true,
+                  jobData: eventData.jobData
+                };
+                onFoundWebsocketEvent(returnData);
+              }
+            }
+          });
+        } catch (error) {}
+      };
+
+      const convertOptions = {
+        ids: [id],
+        applyMetadata: true
+      };
+
+      if (['preview', 'original'].includes(downloadFormat)) {
+        convertOptions.downloadType = downloadFormat;
       } else {
-        return download.downloadURL;
+        convertOptions.downloadType = 'downloadFormat';
+        convertOptions.downloadFormatID = downloadFormat;
       }
-    }
 
-    return await checkDownload();
+      api.get('/files/convert', convertOptions).then((convertResponse) => {
+        downloadJobID = convertResponse.jobID;
+        const foundWebsocketEvent = finishedWebsocketEvents.find((finishedEvent) => finishedEvent.jobID === downloadJobID);
+        if (foundWebsocketEvent) {
+          const returnData = {
+            success: true,
+            jobData: foundWebsocketEvent.jobData
+          };
+          onFoundWebsocketEvent(returnData);
+        }
+      });
+    });
   }
 
   const submit = async () => {
@@ -209,20 +242,15 @@
     isLoading = true;
     for (let i = 0; i < selectedFiles.length; i += 1) {
       const file = selectedFiles[i];
-      const url = downloadFormat === 'preview' ? file.previewFileURL : file.originalFileURL
       const thumbnail = file.modifiedPreviewFileURLs[0];
-
-      if (!['preview', 'original'].includes(downloadFormat)) {
-        // catch format
-        url = await fetchDownloadFormats(file.id);
-      }
+      const url = await convertFile(file.id, downloadFormat);
 
       preparedFiles.push({
         id: file.id,
         url,
         thumbnail,
         file: file
-      })
+      });
     }
     isLoading = false;
     dispatch('submit', preparedFiles)
