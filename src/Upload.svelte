@@ -24,8 +24,10 @@
 
       let uploadJobID = null;
       let finishedWebsocketEvents = [];
+      let unsubscribeWebsocketListen = null;
 
       const onFoundWebsocketEvent = (returnData) => {
+        unsubscribeWebsocketListen();
         uploadJobID = null;
         finishedWebsocketEvents = [];
 
@@ -33,26 +35,20 @@
         return returnData;
       };
 
-      $websocket.onmessage = (event) => {
-        try {
-          const lines = event.data.split("\n");
-          lines.forEach(line => {
-            let eventData = JSON.parse(line);
-            if (eventData.type === 'finishedJob') {
-              finishedWebsocketEvents.push(eventData);
+      unsubscribeWebsocketListen = $websocket.listen((event) => {
+        if (event?.type === 'finishedJob') {
+          finishedWebsocketEvents.push(event);
 
-              if (uploadJobID && eventData.jobID === uploadJobID) {
-                const returnData = {
-                  success: true,
-                  id: eventData.jobData.fileID,
-                  isDuplicate: eventData.jobData.isDuplicate || false
-                };
-                onFoundWebsocketEvent(returnData);
-              }
-            }
-          });
-        } catch (e) { }
-      };
+          if (uploadJobID && event.jobID === uploadJobID) {
+            const returnData = {
+              success: true,
+              id: event.jobData.fileID,
+              isDuplicate: event.jobData.isDuplicate || false
+            };
+            onFoundWebsocketEvent(returnData);
+          }
+        }
+      });
 
       const formData = new FormData();
       formData.set('asynchronousConversion', true);

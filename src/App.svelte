@@ -1,21 +1,13 @@
 <script>
+	import { createEventDispatcher, onMount } from 'svelte';
 	import Logo from './Logo.svelte';
 	import SearchField from './SearchField.svelte';
 	import Login from './Login.svelte';
 	import Files from './Files.svelte';
 	import User from './User.svelte';
-	import { createEventDispatcher } from 'svelte';
-	import { domain, modal, refreshToken, isAuthenticated, mode, show, compact, accessToken, websocket } from './store/store';
+	import { domain, modal, refreshToken, isAuthenticated, mode, show, compact, websocket } from './store/store';
 	import Upload from './Upload.svelte';
-
-
-  // connect to websocket as soon as domain and accessToken are available and write websocket to store to make it available for all components
-  $: {
-    if ($domain && $accessToken) {
-      const websocketUrl = 'wss://' + $domain.replace(/^(http|https):\/\//, '') + '/gobackend/ws?accessToken=' + $accessToken;
-      websocket.update(() => new WebSocket(websocketUrl));
-    }
-  }
+  import { WEBSOCKET } from './websocket'
 
 	/* Props */
 	export let uploadConfig = {};
@@ -23,6 +15,10 @@
 	const dispatch = createEventDispatcher();
 
 	let searchQuery = '';
+
+  onMount(() => { 
+    websocket.update(() => new WEBSOCKET());
+  });
 	
 	// authenticated
 	const authenticated = () => {

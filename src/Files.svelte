@@ -34,7 +34,7 @@
       query = value;
       changes();
     })
-    changed.subscribe(() => changes())
+    changed.subscribe(() => changes());
   });
 
   const changes = () => {
@@ -183,34 +183,30 @@
   const convertFile = async (id, downloadFormat) => {
     let finishedWebsocketEvents = [];
     let downloadJobID = null;
+    let unsubscribeWebsocketListen = null;
     
     return new Promise((resolve, reject) => {
       const onFoundWebsocketEvent = (returnData) => {
+        unsubscribeWebsocketListen();
         downloadJobID = null;
         finishedWebsocketEvents = [];
 
         resolve(returnData.jobData.downloadURL);
       };
 
-      $websocket.onmessage = (event) => {
-        try {
-          const lines = event.data.split("\n");
-          lines.forEach(line => {
-            let eventData = JSON.parse(line);
-            if (eventData.type === 'finishedJob') {
-              finishedWebsocketEvents.push(eventData);
+      unsubscribeWebsocketListen = $websocket.listen((event) => {
+        if (event?.type === 'finishedJob') {
+          finishedWebsocketEvents.push(event);
 
-              if (downloadJobID && eventData.jobID === downloadJobID) {
-                const returnData = {
-                  success: true,
-                  jobData: eventData.jobData
-                };
-                onFoundWebsocketEvent(returnData);
-              }
-            }
-          });
-        } catch (error) {}
-      };
+          if (downloadJobID && event.jobID === downloadJobID) {
+            const returnData = {
+              success: true,
+              jobData: event.jobData
+            };
+            onFoundWebsocketEvent(returnData);
+          }
+        }
+      });
 
       const convertOptions = {
         ids: [id],
