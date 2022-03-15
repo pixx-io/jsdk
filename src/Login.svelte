@@ -33,9 +33,11 @@
   if (mediaspace) {
     domain.update(() => mediaspace);
   }
-  if(token && ($domain || mediaspace)) {
+  if((refreshToken || token) && ($domain || mediaspace)) {
     isLoading = true;
-    refreshToken.update(() => token);
+    if (token) {
+      refreshToken.update(() => token);
+    }
     
     api.callAccessToken().then(() => {
       isLoading = false;

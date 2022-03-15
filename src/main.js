@@ -28,9 +28,10 @@ class PIXXIO {
 		modal.update(() => config?.modal);
 		askForProxy.update(() => !!config?.askForProxy);
 		compact.update(() => config?.compact || false);
+		refreshToken.update(() => config?.refreshToken || '');
 	}
 	boot() {
-		if (!this.config.element) {
+		if (!this.config?.element) {
 			const root = document.createElement('div');
 			root.id = 'pixxio-integration';
 			document.body.appendChild(root);
@@ -54,8 +55,6 @@ class PIXXIO {
 		showFileName.update(() => config?.showFileName);
 		showFileType.update(() => config?.showFileType);
 		showFileSize.update(() => config?.showFileSize);
-		
-	
 		const calledTime = Date.now();
 		changed.update(() => calledTime);
 		mode.update(() => 'get');
