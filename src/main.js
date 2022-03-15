@@ -2,7 +2,7 @@ import { get } from 'svelte/store';
 import { API } from './api';
 import App from './App.svelte';
 import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields, showFileName, showFileType, showFileSize } from './store/media';
-import { domain, language, appKey, modal, show, isAuthenticated, mode, refreshToken, askForProxy, compact } from './store/store';
+import { domainPreSet, domain, language, appKey, modal, show, isAuthenticated, mode, refreshToken, askForProxy, compact } from './store/store';
 
 // Tippy styles
 import 'tippy.js/dist/tippy.css';
@@ -24,6 +24,7 @@ class PIXXIO {
 	storeConfig(config) {
 		language.update(() => config?.language || 'en');
 		domain.update(() => config?.appUrl || '');
+		domainPreSet.update(() => !!config?.appUrl || false);
 		appKey.update(() => config?.appKey || '');
 		modal.update(() => config?.modal);
 		askForProxy.update(() => !!config?.askForProxy);

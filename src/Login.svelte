@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domain, appKey, refreshToken, modal, askForProxy } from './store/store';
+  import { domainPreSet, domain, appKey, refreshToken, modal, askForProxy } from './store/store';
   import { API } from "./api";
   import Loading from "./Loading.svelte";
   import axios from 'axios';
@@ -14,7 +14,7 @@
   let password = '';
   let hasError = false;
   let isLoading = false;
-  let mediaspace = get('domain');
+  let mediaspace = $domain;
   let applicationKeyIsLocked = false;
   let showAdvancedSettings = false;
 
@@ -112,7 +112,7 @@
 <div class="login fields" class:no-modal="{!$modal}">
   <h2>{lang('signin')}</h2>
   <p>{lang('signin_description')}</p>
-  {#if !$domain}
+  {#if !$domainPreSet}
   <div class="field">
     <input bind:value={mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " on:keydown={handleKeydown} />
     <label for="pixxio-mediaspace">{lang('mediaspace')}</label>
