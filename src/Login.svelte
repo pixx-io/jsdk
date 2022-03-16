@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte"; 
   import { lang } from "./translation";
-  import { domainPreSet, domain, appKey, refreshToken, modal, askForProxy } from './store/store';
+  import { mediaspacePreSet, mediaspace, appKey, refreshToken, modal, askForProxy } from './store/store';
   import { API } from "./api";
   import Loading from "./Loading.svelte";
   import axios from 'axios';
@@ -14,7 +14,7 @@
   let password = '';
   let hasError = false;
   let isLoading = false;
-  let mediaspace = $domain;
+  let _mediaspace = $mediaspace;
   let applicationKeyIsLocked = false;
   let showAdvancedSettings = false;
 
@@ -29,15 +29,15 @@
   /**
    * check if there is a refreshToken in storage
    */
-  const token = localStorage.getItem('refreshToken');
-  const localStoreMediaSpace = localStorage.getItem('domain');
+  const localStoreRefreshToken = localStorage.getItem('refreshToken');
+  const localStoreMediaSpace = localStorage.getItem('mediaspace');
   if (localStoreMediaSpace) {
-    domain.update(() => localStoreMediaSpace);
+    mediaspace.update(() => localStoreMediaSpace);
   }
-  if((refreshToken || token) && ($domain || mediaspace)) {
+  if((refreshToken || localStoreRefreshToken) && ($mediaspace || _mediaspace)) {
     isLoading = true;
-    if (token) {
-      refreshToken.update(() => token);
+    if (localStoreRefreshToken) {
+      refreshToken.update(() => localStoreRefreshToken);
     }
     
     api.callAccessToken().then(() => {
@@ -54,7 +54,7 @@
     try {
       isLoading = true;
       hasError = false;
-      mediaspace = mediaspace.replace(/(http|https):\/\//, '').trim();
+      _mediaspace = _mediaspace.replace(/(http|https):\/\//, '').trim();
       const formData = new FormData();
       formData.set('applicationKey', $appKey);
       formData.set('userNameOrEmail', username.trim());
@@ -73,7 +73,7 @@
       }
 
       const response = await axios({
-        url: `https://${mediaspace}/gobackend/login`,
+        url: `https://${_mediaspace}/gobackend/login`,
         method: 'POST',
         data: formData
       });
@@ -87,8 +87,8 @@
 
       // store refreshToken 
       refreshToken.update(() => response.data.refreshToken);
-      domain.update(() => mediaspace);
-      localStorage.setItem('domain', mediaspace);
+      mediaspace.update(() => _mediaspace);
+      localStorage.setItem('mediaspace', _mediaspace);
       localStorage.setItem('refreshToken', response.data.refreshToken);
       
       api.callAccessToken().then(() => {
@@ -112,9 +112,9 @@
 <div class="login fields" class:no-modal="{!$modal}">
   <h2>{lang('signin')}</h2>
   <p>{lang('signin_description')}</p>
-  {#if !$domainPreSet}
+  {#if !$mediaspacePreSet}
   <div class="field">
-    <input bind:value={mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " on:keydown={handleKeydown} />
+    <input bind:value={_mediaspace} id="pixxio-mediaspace" disabled='{isLoading}' type="text" placeholder=" " on:keydown={handleKeydown} />
     <label for="pixxio-mediaspace">{lang('mediaspace')}</label>
   </div>
   {/if}

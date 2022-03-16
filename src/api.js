@@ -1,17 +1,17 @@
 import axios from "axios";
-import { accessToken, appKey, domain, refreshToken, proxy } from "./store/store";
+import { accessToken, appKey, mediaspace, refreshToken, proxy } from "./store/store";
 
 export class API {
 
   accessToken = '';
   refreshToken = '';
-  domain = '';
+  mediaspace = '';
   appKey = '';
   proxyConfig = {}
 
   constructor(
   ) {
-    domain.subscribe(value => this.domain = value);
+    mediaspace.subscribe(value => this.mediaspace = value);
     appKey.subscribe(value => this.appKey = value);
     refreshToken.subscribe(value => this.refreshToken = value);
     
@@ -59,7 +59,7 @@ export class API {
     this.proxyConfig = JSON.parse(localStorage.getItem('proxy'));
     return new Promise((resolve, reject) => {
       const request = (requestData, headers) => {
-        const url = 'https://' + this.domain.replace(/(http|https):\/\//, '') + '/gobackend' + path;
+        const url = 'https://' + this.mediaspace.replace(/(http|https):\/\//, '') + '/gobackend' + path;
         let params = requestData;
         if (useURLSearchParams) {
           params = new URLSearchParams();
