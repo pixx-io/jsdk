@@ -11,3 +11,4 @@ export const additionalResponseFields = writable([]);
 export const showFileName = writable(false);
 export const showFileType = writable(false);
 export const showFileSize = writable(false);
+export const showSubject = writable(true);
