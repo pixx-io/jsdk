@@ -40,6 +40,7 @@ const p = new PIXXIO({
 
 - `appKey`: Your system Application Key.
 - `appUrl`: Your pixx.io system URL. (Mediaspace) If the `appUrl` is not set, the user will be requested to set the mediaspace on the login screen.
+- `refreshToken`: If you know your refresh token, you can define it here. If a refreshToken and an appUrl is set the login step is skipped.
 - `element`: if element is set, then this element will be used as root element for the pixxio selector. Otherwise an own element is created and added to the body. 
 - `modal`: if modal is set to false. the selector won't open as an overlay. default `true`
 - `language`: currently supported are german `de` and english `en`

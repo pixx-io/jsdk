@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 
-export const domain = writable('');
+export const mediaspace = writable('');
+export const mediaspacePreSet = writable(false);
 export const appKey = writable('');
 export const refreshToken = writable('');
 export const accessToken = writable('');

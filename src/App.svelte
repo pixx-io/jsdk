@@ -5,9 +5,9 @@
 	import Login from './Login.svelte';
 	import Files from './Files.svelte';
 	import User from './User.svelte';
-	import { domain, modal, refreshToken, isAuthenticated, mode, show, compact, websocket } from './store/store';
 	import Upload from './Upload.svelte';
   import { WEBSOCKET } from './websocket'
+	import { mediaspace, modal, refreshToken, isAuthenticated, mode, show, compact, websocket } from './store/store';
 
 	/* Props */
 	export let uploadConfig = {};
@@ -27,9 +27,9 @@
 
 	const logout = () => {
 		localStorage.removeItem('refreshToken');
-		localStorage.removeItem('domain');
+		localStorage.removeItem('mediaspace');
 		isAuthenticated.update(() => false);
-		domain.update(() => '');
+		mediaspace.update(() => '');
 		refreshToken.update(() => '');
 	}
 

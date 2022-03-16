@@ -95,14 +95,14 @@
         {/if}
       </div>
     </div>
-    {#if $showFileName}
-    <figcaption bind:this={tooltipElement}>
-      {file.fileName}
-    </figcaption>
-    {/if}
     {#if $showSubject}
     <figcaption bind:this={tooltipElement}>
       {file.subject}
+    </figcaption>
+    {/if}
+    {#if $showFileName}
+    <figcaption bind:this={tooltipElement}>
+      {file.fileName}
     </figcaption>
     {/if}
   </figure>

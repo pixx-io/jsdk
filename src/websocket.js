@@ -1,5 +1,5 @@
 import { API } from './api';
-import { domain, accessToken } from './store/store';
+import { mediaspace, accessToken } from './store/store';
 import { writable } from 'svelte/store';
 
 export class WEBSOCKET {
@@ -7,7 +7,7 @@ export class WEBSOCKET {
   listenSubject = writable(null);
 
   socket = null;
-  domain = null;
+  mediaspace = null;
   accessToken = null;
   status = 'NOT_CONNECTED';
   reconnectionAttempts = 0;
@@ -15,8 +15,8 @@ export class WEBSOCKET {
   reconnectionTimeoutDelay = 5000;
 
   constructor() {
-    domain.subscribe(value => {
-      this.domain = value;
+    mediaspace.subscribe(value => {
+      this.mediaspace = value;
       this.init();
     });
     accessToken.subscribe(value => {
@@ -26,7 +26,7 @@ export class WEBSOCKET {
   }
 
   init() {
-    if (this.domain && this.accessToken) {
+    if (this.mediaspace && this.accessToken) {
       this.connect();
     }
   }
@@ -44,7 +44,7 @@ export class WEBSOCKET {
 
     this.status = 'CONNECTING';
 
-    const websocketUrl = 'wss://' + this.domain.replace(/^(http|https):\/\//, '') + '/gobackend/ws?accessToken=' + this.accessToken;
+    const websocketUrl = 'wss://' + this.mediaspace.replace(/^(http|https):\/\//, '') + '/gobackend/ws?accessToken=' + this.accessToken;
     this.socket = new WebSocket(websocketUrl);
 
     this.socket.onopen = () => {
