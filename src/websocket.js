@@ -39,7 +39,6 @@ export class WEBSOCKET {
     this.close();
 
     if (!this.accessToken) {
-      console.info('WS: no connection possible. access token is missing.');
       return false;
     }
 
@@ -49,14 +48,12 @@ export class WEBSOCKET {
     this.socket = new WebSocket(websocketUrl);
 
     this.socket.onopen = () => {
-      console.log('WS: Connected');
       this.status = 'CONNECTED';
       this.reconnectionTries = 10;
       clearTimeout(this.reconnectionTimeout);
     };
 
     this.socket.onmessage = (event) => {
-      console.info('WS: Recieved Message:', event.data);
       try {
         const lines = event.data.split("\n");
         lines.forEach(line => {
@@ -75,7 +72,7 @@ export class WEBSOCKET {
       console.error('WS: Error!', event);
       this.status = 'ERROR';
       if (this.reconnectionTries < 5) {
-        new API().callAccessToken().then({
+        (new API()).callAccessToken().then({
           // connection will be triggered by the accessToken subscriber
         });
       } else {
@@ -97,7 +94,6 @@ export class WEBSOCKET {
 
     this.reconnectionTimeout = setTimeout(() => {
       this.reconnectionAttempts -= 1;
-      console.info('WS: Try to reconnect', 'connection tries left:', this.reconnectionAttempts);
       const authenticated = this.connect();
       if (!authenticated) {
         clearTimeout(this.reconnectionTimeout);
@@ -107,7 +103,6 @@ export class WEBSOCKET {
 
   close() {
     if (this.socket && (this.status === 'CONNECTED' || this.status === 'CONNECTING')) {
-      console.info('FRONTEND CLOSES CONNECTION');
       this.socket.close();
     }
   }
