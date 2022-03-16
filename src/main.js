@@ -50,7 +50,6 @@ class PIXXIO {
 		show.update(() => false);
 	}
 	getMedia(config) {
-    console.log('=> getMedia: ', config);
 		allowTypes.update(() => config?.allowTypes || []);
 		allowFormats.update(() => config?.allowFormats || null);
 		maxFiles.update(() => config?.max > 0 ? (config?.max || 0) : 0);
