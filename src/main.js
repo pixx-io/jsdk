@@ -2,7 +2,7 @@ import { get } from 'svelte/store';
 import { API } from './api';
 import App from './App.svelte';
 import { changed, maxFiles, allowFormats, allowTypes, additionalResponseFields, showFileName, showFileType, showFileSize } from './store/media';
-import { domain, language, appKey, modal, show, isAuthenticated, mode, refreshToken, askForProxy, compact } from './store/store';
+import { mediaspacePreSet, mediaspace, language, appKey, modal, show, isAuthenticated, mode, refreshToken, askForProxy, compact } from './store/store';
 
 // Tippy styles
 import 'tippy.js/dist/tippy.css';
@@ -23,14 +23,16 @@ class PIXXIO {
 	}
 	storeConfig(config) {
 		language.update(() => config?.language || 'en');
-		domain.update(() => config?.appUrl || '');
+		mediaspace.update(() => config?.appUrl || '');
+		mediaspacePreSet.update(() => !!config?.appUrl || false);
 		appKey.update(() => config?.appKey || '');
 		modal.update(() => config?.modal);
 		askForProxy.update(() => !!config?.askForProxy);
 		compact.update(() => config?.compact || false);
+		refreshToken.update(() => config?.refreshToken || '');
 	}
 	boot() {
-		if (!this.config.element) {
+		if (!this.config?.element) {
 			const root = document.createElement('div');
 			root.id = 'pixxio-integration';
 			document.body.appendChild(root);
@@ -54,8 +56,6 @@ class PIXXIO {
 		showFileName.update(() => config?.showFileName);
 		showFileType.update(() => config?.showFileType);
 		showFileSize.update(() => config?.showFileSize);
-		
-	
 		const calledTime = Date.now();
 		changed.update(() => calledTime);
 		mode.update(() => 'get');
@@ -167,10 +167,10 @@ class PIXXIO {
 
 	forceLogout = () => {
 		localStorage.removeItem('refreshToken');
-		localStorage.removeItem('domain');
+		localStorage.removeItem('mediaspace');
 		localStorage.removeItem('proxy');
 		isAuthenticated.update(() => false);
-		domain.update(() => '');
+		mediaspace.update(() => '');
 		refreshToken.update(() => '');
 	}
 

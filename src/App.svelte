@@ -5,14 +5,14 @@
 	import Files from './Files.svelte';
 	import User from './User.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { domain, modal, refreshToken, isAuthenticated, mode, show, compact, accessToken, websocket } from './store/store';
+	import { mediaspace, modal, refreshToken, isAuthenticated, mode, show, compact, accessToken, websocket } from './store/store';
 	import Upload from './Upload.svelte';
 
 
   // connect to websocket as soon as domain and accessToken are available and write websocket to store to make it available for all components
   $: {
-    if ($domain && $accessToken) {
-      const websocketUrl = 'wss://' + $domain.replace(/^(http|https):\/\//, '') + '/gobackend/ws?accessToken=' + $accessToken;
+    if ($mediaspace && $accessToken) {
+      const websocketUrl = 'wss://' + $mediaspace.replace(/^(http|https):\/\//, '') + '/gobackend/ws?accessToken=' + $accessToken;
       websocket.update(() => new WebSocket(websocketUrl));
     }
   }
@@ -31,9 +31,9 @@
 
 	const logout = () => {
 		localStorage.removeItem('refreshToken');
-		localStorage.removeItem('domain');
+		localStorage.removeItem('mediaspace');
 		isAuthenticated.update(() => false);
-		domain.update(() => '');
+		mediaspace.update(() => '');
 		refreshToken.update(() => '');
 	}
 
