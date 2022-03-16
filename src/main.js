@@ -48,26 +48,24 @@ class PIXXIO {
 		show.update(() => false);
 	}
 	getMedia(config) {
-    const helper = new HELPER();
-  
 		allowTypes.update(() => config?.allowTypes || []);
 		allowFormats.update(() => config?.allowFormats || null);
 		maxFiles.update(() => config?.max > 0 ? (config?.max || 0) : 0);
 		additionalResponseFields.update(() => config?.additionalResponseFields || []);
     
-    if (helper.isBoolean(config?.showFileName)) {
+    if (HELPER.isBoolean(config?.showFileName)) {
 		  showFileName.update(() => config?.showFileName);
     }
     
-    if (helper.isBoolean(config?.showFileType)) {
+    if (HELPER.isBoolean(config?.showFileType)) {
 		  showFileType.update(() => config?.showFileType);
     }
     
-    if (helper.isBoolean(config?.showFileSize)) {
+    if (HELPER.isBoolean(config?.showFileSize)) {
       showFileSize.update(() => config?.showFileSize);
     }
 
-    if (helper.isBoolean(config?.showSubject)) {
+    if (HELPER.isBoolean(config?.showSubject)) {
       showSubject.update(() => config?.showSubject);
     }
 	

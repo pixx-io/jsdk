@@ -1,5 +1,5 @@
 export class HELPER {
-  isBoolean = (value) => {
+  static isBoolean = (value) => {
     return value === false || value === true;
   }
 }
