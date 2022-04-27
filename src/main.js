@@ -216,7 +216,6 @@ class PIXXIO {
 							"uploadDate",
 							"modifyDate",
 							"rating",
-							"userID",
 							"fileSize",
 							"dominantColor",
 							"versions"

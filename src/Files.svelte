@@ -104,7 +104,6 @@
           "uploadDate",
           "modifyDate",
           "rating",
-          "userID",
           "fileSize",
           "dominantColor",
           "subject",
