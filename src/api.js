@@ -56,7 +56,7 @@ export class API {
   }
 
   call(method, path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true) {
-    this.proxyConfig = JSON.parse(localStorage.getItem('proxy'));
+    this.proxyConfig = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('proxy')) : {};
     return new Promise((resolve, reject) => {
       const request = (requestData, headers) => {
         const url = 'https://' + this.mediaspace.replace(/(http|https):\/\//, '') + '/gobackend' + path;

@@ -181,16 +181,18 @@ class PIXXIO {
 	}
 
 	forceLogout = () => {
-		localStorage.removeItem('refreshToken');
-		localStorage.removeItem('mediaspace');
-		localStorage.removeItem('proxy');
+		if (typeof localStorage !== 'undefined') {
+			localStorage.removeItem('refreshToken');
+			localStorage.removeItem('mediaspace');
+			localStorage.removeItem('proxy');
+		}
 		isAuthenticated.update(() => false);
 		mediaspace.update(() => '');
 		refreshToken.update(() => '');
 	}
 
 	getProxyConfiguration() {
-		const proxyStettings = localStorage.getItem('proxy');
+		const proxyStettings = typeof localStorage !== 'undefined' ? localStorage.getItem('proxy') : null;
 		if (proxyStettings) {
 			return JSON.parse(proxyStettings);
 		}
