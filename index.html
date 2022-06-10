@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width,initial-scale=1'>
+	<title>pixx.io JSDK</title>
+	<link rel='icon' type='image/png' href='/favicon.png'>
+	<link rel="stylesheet" href="build/pixxio.jsdk.css">
+	<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		body {
+			margin: 0;
+			font-family: 'Heebo', Arial, Helvetica, sans-serif;
+		}
+		.buttonGroup {
+			display: flex;
+			margin: 0 -8px;
+		}
+		button {
+			background-color: #fe8a6a;
+			padding: 0 10px 0 10px;
+			height: 36px;
+   	 	font-size: 12px;
+			color: white;
+			border-radius: 4px;
+			border: 0;
+			outline: 0;
+			text-transform: uppercase;
+			margin: 0 8px;
+			transition: background 200ms ease;
+			cursor: pointer;
+		}
+		button:hover {
+			background: #d87154;
+		}
+		input[type="file"] {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<!-- EMBEED SCRIPT -->
+	<header>
+		<h2>pixx.io JSDK</h2>
+		<div class="formGroup">
+			<div class="field">
+				<input type="text" placeholder="appKey" />
+			</div>
+			<div class="field">
+				<input type="text" placeholder="appUrl (your mediaspace)" />
+			</div>
+		</div>
+		<div class="buttonGroup">
+			<button id="btn">select file</button>
+			<button id="btn3">upload file to pixxio</button>
+			<input type="file">
+		</div>
+	</header>
+
+	<div id="pixxio-jsdk" style="padding: 0; border: 3px solid grey">
+	<!-- integration will be placed here-->
+	</div>
+	<script src='build/pixxio.jsdk.min.js'></script>
+	<script type="application/javascript">
+		var p = new PIXXIO({
+			element: document.querySelector('#pixxio-jsdk'),
+			modal: false,
+			appKey: '70aK0pH090EyxHgS1sSg3Po8M',
+			language: 'de',
+			askForProxy: true,
+			compact: false,
+			appUrl: 'https://version2-stage.pixx.io',
+			refreshToken: 'uOCvE1NBv33BLAnflITdhQpV75qwtH'
+		});
+
+		function setImage(file) {
+			var image = new Image();
+			image.src = file.url;
+			document.body.appendChild(image);
+		}
+		
+		document.querySelector('#btn').addEventListener('click', (e) => {
+			e.preventDefault();
+			p.getMedia({ 
+				max: -1, 
+				allowTypes: ['jpg', 'png'],
+				showSelection: false,
+				showFileName: false,
+				showFileType: true,
+				showFileSize: false
+				// allowedFormats: ['preview']
+			 }).then((selectedFiles) => {
+				selectedFiles.forEach(f => setImage(f));
+			}).catch(() => {
+				console.log('closed')
+			});
+		})
+
+
+		document.querySelector('#btn2').addEventListener('click', (e) => {
+			e.preventDefault();
+			p.getMedia({ 
+				max: 1, 
+				allowTypes: ['psd'],
+			  allowFormats: ['preview']
+			 }).then((selectedFiles) => {
+				selectedFiles.forEach(f => setImage(f));
+			}).catch(() => {
+				console.log('closed');
+			});
+		});
+
+		document.querySelector('input[type=file]').addEventListener('change', (event) => {
+				var file = document.querySelector('input[type=file]').files[0];
+				p.pushMedia({ 
+					file: file,
+				}).then((response) => {
+					console.log('pushMedia response: ', response)
+				}).catch(() => {
+					document.querySelector('input[type=file]').value = '';
+				});
+			})
+
+		document.querySelector('#btn3').addEventListener('click', (e) => {
+			e.preventDefault();
+			var file = document.querySelector('input[type=file]').files[0];
+			document.querySelector('input[type=file]').dispatchEvent(new MouseEvent('click', {bubbles: true}));
+		})
+
+	</script>
+</body>
+</html>

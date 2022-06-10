@@ -26,8 +26,10 @@
 	}
 
 	const logout = () => {
-		localStorage.removeItem('refreshToken');
-		localStorage.removeItem('mediaspace');
+		if (typeof localStorage !== 'undefined') {
+			localStorage.removeItem('refreshToken');
+			localStorage.removeItem('mediaspace');
+		}
 		isAuthenticated.update(() => false);
 		mediaspace.update(() => '');
 		refreshToken.update(() => '');

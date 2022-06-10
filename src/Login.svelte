@@ -29,8 +29,8 @@
   /**
    * check if there is a refreshToken in storage
    */
-  const localStoreRefreshToken = localStorage.getItem('refreshToken');
-  const localStoreMediaSpace = localStorage.getItem('mediaspace');
+  const localStoreRefreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+  const localStoreMediaSpace = typeof localStorage !== 'undefined' ? localStorage.getItem('mediaspace') : null;
   if (localStoreMediaSpace) {
     mediaspace.update(() => localStoreMediaSpace);
   }
@@ -69,7 +69,9 @@
           port: (/^http/gi.test(proxyParts[0]) ? proxyParts[2] : proxyParts[1]) || '',
           auth: proxyInput.auth
         };
-        localStorage.setItem('proxy', JSON.stringify(tempProxy));
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('proxy', JSON.stringify(tempProxy));
+        }
       }
 
       const response = await axios({
@@ -88,8 +90,10 @@
       // store refreshToken 
       refreshToken.update(() => response.data.refreshToken);
       mediaspace.update(() => _mediaspace);
-      localStorage.setItem('mediaspace', _mediaspace);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('mediaspace', _mediaspace);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+      }
       
       api.callAccessToken().then(() => {
         dispatch('authenticated');
