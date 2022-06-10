@@ -181,21 +181,25 @@ class PIXXIO {
 	}
 
 	forceLogout = () => {
-		if (typeof localStorage !== 'undefined') {
-			localStorage.removeItem('refreshToken');
-			localStorage.removeItem('mediaspace');
-			localStorage.removeItem('proxy');
-		}
+		try {
+			if (typeof localStorage !== 'undefined') {
+				localStorage.removeItem('refreshToken');
+				localStorage.removeItem('mediaspace');
+				localStorage.removeItem('proxy');
+			}
+		} catch(e) {}
 		isAuthenticated.update(() => false);
 		mediaspace.update(() => '');
 		refreshToken.update(() => '');
 	}
 
 	getProxyConfiguration() {
-		const proxyStettings = typeof localStorage !== 'undefined' ? localStorage.getItem('proxy') : null;
-		if (proxyStettings) {
-			return JSON.parse(proxyStettings);
-		}
+		try {
+			const proxyStettings = typeof localStorage !== 'undefined' ? localStorage.getItem('proxy') : null;
+			if (proxyStettings) {
+				return JSON.parse(proxyStettings);
+			}
+		} catch(e) {}
 		return null;
 	}
 

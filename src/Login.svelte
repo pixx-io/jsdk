@@ -29,8 +29,13 @@
   /**
    * check if there is a refreshToken in storage
    */
-  const localStoreRefreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem('refreshToken') : null;
-  const localStoreMediaSpace = typeof localStorage !== 'undefined' ? localStorage.getItem('mediaspace') : null;
+  let localStoreRefreshToken = null;
+  let localStoreMediaSpace = null;
+  try {
+    localStoreRefreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+    localStoreMediaSpace = typeof localStorage !== 'undefined' ? localStorage.getItem('mediaspace') : null
+  } catch(e) {}
+
   if (localStoreMediaSpace) {
     mediaspace.update(() => localStoreMediaSpace);
   }
@@ -69,9 +74,11 @@
           port: (/^http/gi.test(proxyParts[0]) ? proxyParts[2] : proxyParts[1]) || '',
           auth: proxyInput.auth
         };
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('proxy', JSON.stringify(tempProxy));
-        }
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('proxy', JSON.stringify(tempProxy));
+          }
+        } catch(e) {}
       }
 
       const response = await axios({
@@ -90,10 +97,13 @@
       // store refreshToken 
       refreshToken.update(() => response.data.refreshToken);
       mediaspace.update(() => _mediaspace);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('mediaspace', _mediaspace);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-      }
+
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('mediaspace', _mediaspace);
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+      } catch(e) {}
       
       api.callAccessToken().then(() => {
         dispatch('authenticated');

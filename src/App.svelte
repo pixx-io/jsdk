@@ -26,10 +26,12 @@
 	}
 
 	const logout = () => {
-		if (typeof localStorage !== 'undefined') {
-			localStorage.removeItem('refreshToken');
-			localStorage.removeItem('mediaspace');
-		}
+		try {
+			if (typeof localStorage !== 'undefined') {
+				localStorage.removeItem('refreshToken');
+				localStorage.removeItem('mediaspace');
+			}
+		} catch(e) {}
 		isAuthenticated.update(() => false);
 		mediaspace.update(() => '');
 		refreshToken.update(() => '');
