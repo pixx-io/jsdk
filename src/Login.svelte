@@ -168,6 +168,9 @@
   <div class="buttonGroup buttonGroup--fullSize">
     <button class="button" type="submit" disabled='{isLoading}' on:click={login}>{lang('signin')}</button>
   </div>
+  <div>
+    <small><a class="advanced" style="padding: 10px;" target="_blank" href={ lang('try_pixxio_url') } >{lang('try_pixxio')}</a></small>
+  </div>
   {#if isLoading}
     <Loading></Loading>
   {/if}
@@ -208,6 +211,12 @@
 
     a.advanced {
       color: $primary;
+      display: block;
+      text-decoration: none;
+      transition: background-color 200ms ease;
+      &:hover {
+        color: darken($primary, 10%);
+      }
     }
   }
   

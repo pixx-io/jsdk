@@ -27,7 +27,7 @@
 
 	const logout = () => {
 		try {
-			if (typeof localStorage !== 'undefined') {
+			if (typeof window.localStorage !== 'undefined') {
 				localStorage.removeItem('refreshToken');
 				localStorage.removeItem('mediaspace');
 			}

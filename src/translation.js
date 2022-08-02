@@ -31,6 +31,8 @@ export function lang(key) {
       proxy_port: "Proxy Port",
       proxy_auth_username: "Username (optional)",
       proxy_auth_password: "Password (optional)",
+      try_pixxio_url: "https://www.pixx.io/jetzt-starten",
+      try_pixxio: "Noch kein Account? Teste pixx.io kostenlos."
     },
     en: {
       mediaspace: 'Mediaspace (example.px.media)',
@@ -57,6 +59,8 @@ export function lang(key) {
       proxy_port: "Proxy Port",
       proxy_auth_username: "Username (optional)",
       proxy_auth_password: "Password (optional)",
+      try_pixxio_url: "https://www.pixx.io/en/free-trial",
+      try_pixxio: "Don't have an account? Try pixx.io for free."
     }
   }
   return lines[lang || 'en'][key];
