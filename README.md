@@ -1,6 +1,6 @@
 # PIXXIO JSDK
 
-This Library helps you to integrate pixx.io DAM Features to your application.
+This Library support your integration of pixx.io DAM into your application.
 
 ## SETUP
 
