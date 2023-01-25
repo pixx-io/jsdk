@@ -45,7 +45,7 @@ export class API {
       .then((data) => {
         if(data.success) {
           this.accessToken = data.accessToken;
-          accessToken.update(() => data.accessToken)
+          accessToken.update(() => data.accessToken);
           resolve(data);
         } else {
           reject(data);
@@ -79,6 +79,7 @@ export class API {
         if (!headers) {
           headers = {};
         }
+
         if (setDefaultHeader) {
           headers['Content-Type'] = 'application/x-www-form-urlencoded';
         }
@@ -101,24 +102,27 @@ export class API {
             break;
         }
 
-        axios({
-          url: observeCall.url,
-          proxy: this.proxyConfig,
-          ...observeCall.request
-        }).then(({data}) => {
-          
-          if (data.success === true || data.success === 'true') {
-            resolve(data);
-          } else {
+        axios({ url: observeCall.url, proxy: this.proxyConfig, ...observeCall.request })
+          .then(({ data }) => {
+            if (data.success === true || data.success === 'true') {
+              resolve(data);
+            } else {
+              throw { response: data };
+            }
+          })
+          .catch(({ response }) => {
+            const data = response?.data;
             switch (data.errorcode) {
-              case 15007:  // API v2
-              case 15008:  // API v2
-                // get new access Token and retry request
-                this.callAccessToken().then(() => {
-                  this.call(method, path, parameters, useAccessToken, additionalHeaders, setDefaultHeader, useURLSearchParams).subscribe((newData) => {
-                    resolve(newData);
-                  });
-                });
+              case 15007:
+              case 15008:
+                this.callAccessToken()
+                  .then(() => {
+                    this.call(method, path, parameters, useAccessToken, additionalHeaders, setDefaultHeader, useURLSearchParams).subscribe({
+                      next: (newData) => resolve(newData),
+                      error: () => reject()
+                    });
+                  })
+                  .catch(() => reject());
                 break;
               case 5266:
                 reject(data.errormessage);
@@ -127,8 +131,7 @@ export class API {
                 reject(data.errormessage);
                 break;
             }
-          }
-        }).catch(error => reject());
+          });
       };
 
       if (useAccessToken) {
