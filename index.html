@@ -7,126 +7,85 @@
 	<link rel='icon' type='image/png' href='/favicon.png'>
 	<link rel="stylesheet" href="build/pixxio.jsdk.css">
 	<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-	<style>
-		body {
-			margin: 0;
-			font-family: 'Heebo', Arial, Helvetica, sans-serif;
-		}
-		.buttonGroup {
-			display: flex;
-			margin: 0 -8px;
-		}
-		button {
-			background-color: #fe8a6a;
-			padding: 0 10px 0 10px;
-			height: 36px;
-   	 	font-size: 12px;
-			color: white;
-			border-radius: 4px;
-			border: 0;
-			outline: 0;
-			text-transform: uppercase;
-			margin: 0 8px;
-			transition: background 200ms ease;
-			cursor: pointer;
-		}
-		button:hover {
-			background: #d87154;
-		}
-		input[type="file"] {
-			display: none;
-		}
-	</style>
+	<link rel="stylesheet" href="preview/style.css">
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+	<script>hljs.highlightAll();</script>
 </head>
 <body>
 	<!-- EMBEED SCRIPT -->
 	<header>
-		<h2>pixx.io JSDK</h2>
+		<h1>pixx.io JSDK <small>0.4.5</small></h1>
 		<div class="formGroup">
 			<div class="field">
-				<input type="text" placeholder="appKey" />
+				<input type="text" name="appKey" placeholder="API Key" />
 			</div>
 			<div class="field">
-				<input type="text" placeholder="appUrl (your mediaspace)" />
+				<input type="text" name="appUrl" placeholder="Mediaspace URL (https://example.px.media)" />
+			</div>
+			<div class="field">
+				<input type="text" name="refreshToken" placeholder="Refresh Token (optional)" />
+			</div>
+			<div class="field">
+				<select name="language">
+					<option value="de">de</option>
+					<option selected value="en">en</option>
+				</select>
+			</div>
+			<div class="field field--checkbox">
+				<input type="checkbox" id="modal" name="modal" />
+				<label for="modal">Open as modal</label>
+			</div>
+			<div class="field field--checkbox">
+				<input type="checkbox" id="askForProxy" name="askForProxy" />
+				<label for="askForProxy">Ask for Proxy</label>
+			</div>
+		</div>
+		<div class="formGroup">
+			<div class="field">
+				<input type="text" name="allowTypes" placeholder="jpg,png,..." />
+			</div>
+			<div class="field field--checkbox">
+				<input type="checkbox" id="showFileSize" name="showFileSize" />
+				<label for="showFileSize">Show file size</label>
+			</div>
+			<div class="field field--checkbox">
+				<input type="checkbox" id="showFileName" name="showFileName" />
+				<label for="showFileName">Show file name</label>
+			</div>
+			<div class="field field--checkbox">
+				<input type="checkbox" id="showFileType" name="showFileType" />
+				<label for="showFileType">Show file type</label>
+			</div>
+			<div class="field field--checkbox">
+				<input type="checkbox" id="showSubjects" name="showSubjects" />
+				<label for="showSubjects">Show subjects</label>
 			</div>
 		</div>
 		<div class="buttonGroup">
 			<button id="btn">select file</button>
-			<button id="btn3">upload file to pixxio</button>
-			<input type="file">
-		</div>
+			<label class="button" for="upload">upload file to pixx.io</label>
+				<input id="upload" type="file" />
+				<button id="showCode"  class="secondary">Show the Code</button>
+			</div>
 	</header>
 
-	<div id="pixxio-jsdk" style="padding: 0; border: 3px solid grey">
+	<div id="pixxio-jsdk">
 	<!-- integration will be placed here-->
 	</div>
+
+	<div id="pixxio-integration-example">
+		<button class="close"><span></span></button>
+		<pre>
+			<code class="language-javascript">
+
+			</code>
+		</pre>
+		<div class="alignRight">
+			<button class="secondary">Copy code</button>
+		</div>
+	</div>
 	<script src='build/pixxio.jsdk.min.js'></script>
-	<script type="application/javascript">
-		var p = new PIXXIO({
-			element: document.querySelector('#pixxio-jsdk'),
-			modal: false,
-			appKey: '70aK0pH090EyxHgS1sSg3Po8M',
-			language: 'de',
-			askForProxy: true,
-			compact: false,
-			appUrl: 'https://version2-stage.pixx.io',
-			refreshToken: 'uOCvE1NBv33BLAnflITdhQpV75qwtH'
-		});
-
-		function setImage(file) {
-			var image = new Image();
-			image.src = file.url;
-			document.body.appendChild(image);
-		}
-		
-		document.querySelector('#btn').addEventListener('click', (e) => {
-			e.preventDefault();
-			p.getMedia({ 
-				max: -1, 
-				allowTypes: ['jpg', 'png'],
-				showSelection: false,
-				showFileName: false,
-				showFileType: true,
-				showFileSize: false
-				// allowedFormats: ['preview']
-			 }).then((selectedFiles) => {
-				selectedFiles.forEach(f => setImage(f));
-			}).catch(() => {
-				console.log('closed')
-			});
-		})
-
-
-		document.querySelector('#btn2').addEventListener('click', (e) => {
-			e.preventDefault();
-			p.getMedia({ 
-				max: 1, 
-				allowTypes: ['psd'],
-			  allowFormats: ['preview']
-			 }).then((selectedFiles) => {
-				selectedFiles.forEach(f => setImage(f));
-			}).catch(() => {
-				console.log('closed');
-			});
-		});
-
-		document.querySelector('input[type=file]').addEventListener('change', (event) => {
-				var file = document.querySelector('input[type=file]').files[0];
-				p.pushMedia({ 
-					file: file,
-				}).then((response) => {
-					console.log('pushMedia response: ', response)
-				}).catch(() => {
-					document.querySelector('input[type=file]').value = '';
-				});
-			})
-
-		document.querySelector('#btn3').addEventListener('click', (e) => {
-			e.preventDefault();
-			var file = document.querySelector('input[type=file]').files[0];
-			document.querySelector('input[type=file]').dispatchEvent(new MouseEvent('click', {bubbles: true}));
-		})
-
-	</script>
+	<script type="application/javascript" src="preview/main.js"></script>
 </body>
 </html>
