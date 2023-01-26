@@ -2,19 +2,20 @@ import axios from "axios";
 import { accessToken, appKey, mediaspace, refreshToken, proxy } from "./store/store";
 
 export class API {
-
   accessToken = '';
   refreshToken = '';
   mediaspace = '';
   appKey = '';
-  proxyConfig = {}
+  proxyConfig = {};
+
+  isAccessTokenFetching = false;
+  queuedRequests = [];
 
   constructor(
   ) {
     mediaspace.subscribe(value => this.mediaspace = value);
     appKey.subscribe(value => this.appKey = value);
     refreshToken.subscribe(value => this.refreshToken = value);
-    
     accessToken.subscribe(value => this.accessToken = value);
   }
 
@@ -56,10 +57,6 @@ export class API {
   }
 
   call(method, path, parameters = {}, useAccessToken = true, additionalHeaders = null, setDefaultHeader = true, useURLSearchParams = true) {
-    try {
-      this.proxyConfig = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('proxy')) : {};
-    } catch(e) {}
-
     return new Promise((resolve, reject) => {
       const request = (requestData, headers) => {
         const url = 'https://' + this.mediaspace.replace(/(http|https):\/\//, '') + '/gobackend' + path;
@@ -115,14 +112,19 @@ export class API {
             switch (data.errorcode) {
               case 15007:
               case 15008:
-                this.callAccessToken()
-                  .then(() => {
-                    this.call(method, path, parameters, useAccessToken, additionalHeaders, setDefaultHeader, useURLSearchParams).subscribe({
-                      next: (newData) => resolve(newData),
-                      error: () => reject()
-                    });
-                  })
-                  .catch(() => reject());
+                if (this.isAccessTokenFetching) {
+                  this.queuedRequests.push(doRequest);
+                } else {
+                  this.isAccessTokenFetching = true;
+                  this.callAccessToken()
+                    .then(() => {
+                      this.isAccessTokenFetching = false;
+                      doRequest();
+                      this.queuedRequests.forEach(r => r());
+                      this.queuedRequests = [];
+                    })
+                    .catch(() => reject());
+                }
                 break;
               case 5266:
                 reject(data.errormessage);
@@ -134,16 +136,24 @@ export class API {
           });
       };
 
-      if (useAccessToken) {
-        const accessToken = this.accessToken;
-        let headers = {};
-        headers = {  // API v2
-          Authorization: 'Key ' + accessToken
-        };
-        request(parameters, headers);
-      } else {
-        request(parameters);
+      const doRequest = () => {
+        try {
+          this.proxyConfig = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('proxy')) : {};
+        } catch(e) {}
+
+        if (useAccessToken) {
+          const accessToken = this.accessToken;
+          let headers = {};
+          headers = {  // API v2
+            Authorization: 'Key ' + accessToken
+          };
+          request(parameters, headers);
+        } else {
+          request(parameters);
+        }
       }
+
+      doRequest();
     });
   }
 }
