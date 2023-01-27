@@ -112,6 +112,7 @@ export class API {
             switch (data.errorcode) {
               case 15007:
               case 15008:
+              case 2062:
                 if (this.isAccessTokenFetching) {
                   this.queuedRequests.push(doRequest);
                 } else {
