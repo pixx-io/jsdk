@@ -58,6 +58,7 @@
       let allowedTypeFilter = [];
       let queryFilter = [];
       let filter = {};
+
       if ($allowTypes.length) {
         allowedTypeFilter = [{
           filterType: 'connectorOr',
@@ -71,10 +72,8 @@
       }
       
       if (query) {
-        queryFilter = [{
-          filterType: 'searchTerm',
-          term: query
-        }]
+        const terms = query.split(',').map(term => (term.trim()));
+        queryFilter = terms.filter(t => !!t).map(term => ({ filterType: 'searchTerm', term }))
       }
 
       if (query || $allowTypes.length) {
