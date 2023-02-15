@@ -241,6 +241,16 @@ class PIXXIO {
 			}
 		})
 	}
+
+	api() {
+		const api = new API();
+		const auth = get(isAuthenticated);
+		return {
+			get: async (path, params) => {
+				return await api.get(path, params);
+			}
+		}
+	}
 }
 
 if (typeof window !== 'undefined') {
